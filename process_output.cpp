@@ -32,7 +32,7 @@ void ParallelMarking(TropicalPrevariety &TP, mutex &ConeMtx)
             continue;
          };
          ConeMtx.unlock();
-         TP.ConeTree[i][j].Status = 2;
+         TP.ConeTree[i][j].Status = 3;
          
          bool WeKnowConeIsNotMaximal = false;
          for(size_t k = TP.ConeTree.size() - 1; k != i; k--)
@@ -53,7 +53,7 @@ void ParallelMarking(TropicalPrevariety &TP, mutex &ConeMtx)
             if (WeKnowConeIsNotMaximal)
                break;
          }
-         // TODO!!!! FIX THIS! Currently not ignoring non-maximal cones. easy fix
+         
          if (!WeKnowConeIsNotMaximal)
             TP.ConeTree[i][j].Status = 1;
       };

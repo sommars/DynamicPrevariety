@@ -129,7 +129,7 @@ void PrintMaximalCones(TropicalPrevariety &TP, stringstream &s)
 {
    if (TP.ConeTree.size() == 0)
       return;
-   
+   vector<int> MaximalConeCounts(TP.ConeTree.size());
    // Prints maximal cones from prevariety object.
    for (size_t i = 0; i != TP.ConeTree.size() - 1; i++)
    {
@@ -139,6 +139,7 @@ void PrintMaximalCones(TropicalPrevariety &TP, stringstream &s)
       {
          if (TP.ConeTree[i][j].Status != 1)
             continue;
+         MaximalConeCounts[i]++;
          set<int>::iterator it;
          s << "{ ";
          for (it=TP.ConeTree[i][j].RayIndices.begin();
@@ -164,8 +165,18 @@ void PrintMaximalCones(TropicalPrevariety &TP, stringstream &s)
            it++)
          s << (*it) << " ";
       s << "}" << endl;
+      MaximalConeCounts[Dim]++;
    };
    
+   s << "------ F-vector  ------"<< endl;
+   s << "{ ";
+   for (size_t i = 0; i != MaximalConeCounts.size(); i++)
+   {
+      s << MaximalConeCounts[i];
+      if (i != MaximalConeCounts.size() - 1)
+         s << ", ";
+   };
+   s << " }" << endl;
 }
 
 //------------------------------------------------------------------------------

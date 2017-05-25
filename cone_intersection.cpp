@@ -199,8 +199,8 @@ void ThreadEnum(
                   map<vector<int>, int>::iterator itr = Output.RayToIndexMap.find(Ray);
                   if (itr == Output.RayToIndexMap.end())
                   {
-                     Output.RayToIndexMap[Ray] = Output.RayToIndexMap.size();
-                     CWI.RayIndices.insert(Output.RayToIndexMap.size());
+                     Output.RayToIndexMap[Ray] = Output.RayToIndexMap.size() - 1;
+                     CWI.RayIndices.insert(Output.RayToIndexMap.size() - 1);
                   } else
                      CWI.RayIndices.insert(itr->second);
                   OutputMtx.unlock();
@@ -448,7 +448,7 @@ int main(int argc, char* argv[])
    
    
    clock_t MarkingTimeStart = clock();
-   MarkMaximalCones(Output, ProcessCount);
+   MarkMaximalCones2(Output, ProcessCount);
    double MarkingTime = double(clock() - MarkingTimeStart) / CLOCKS_PER_SEC;
    
    clock_t PrintingTimeStart = clock();

@@ -1,5 +1,9 @@
 #include "process_output2.h"
 
+int MaxVectorSize;
+int EndOfVector = -1;
+int NullVectorValue = -2;
+
 //------------------------------------------------------------------------------
 struct NormalizedPrevariety
 {
@@ -7,8 +11,75 @@ struct NormalizedPrevariety
 };
 
 //------------------------------------------------------------------------------
+void InitializeVectorFromSet(vector<int> &V, set<int> &S)
+{
+   set<int>::iterator Itr = S.begin();
+   int i = 0;
+   while (Itr != S.end())
+   {
+      V[i] = *Itr;
+      i++;
+      Itr++;
+   };
+   V[i] = EndOfVector;
+   i++;
+   while (i < V.size())
+   {
+      V[i] = NullVectorValue;
+      i++;
+   };
+};
+
+//------------------------------------------------------------------------------
+void IntersectVectorWithSet(vector<int> &V, set<int> &S)
+{
+   set<int>::iterator Itr = S.begin();
+   int i = 0;
+   while ((Itr != S.end()) && (V[i] != EndOfVector))
+   {
+      if (V[i] == NullVectorValue)
+         i++;
+      else if (*Itr < V[i])
+         Itr++;
+      else if (V[i]<*Itr)
+      {
+         V[i] = NullVectorValue;
+         i++;
+      }
+      else 
+      {
+         Itr++;
+         i++;
+      };
+   };
+   
+   while (i < V.size())
+   {
+      if (V[i] == EndOfVector)
+         break;
+      V[i] = NullVectorValue;
+      i++;
+   };
+};
+
+//------------------------------------------------------------------------------
+bool SizeOfVectorIsZero(vector<int> &V)
+{
+   for(size_t i = 0; i != V.size(); i++)
+   {
+      if (V[i] == EndOfVector)
+         return true;
+      if (V[i] != NullVectorValue)
+         return false;
+   };
+   return true;
+};
+
+//------------------------------------------------------------------------------
 void ParallelMarking(NormalizedPrevariety &NP, TropicalPrevariety &TP, mutex &ConeMtx)
 {
+   vector<int> MyVec(MaxVectorSize+1);
+   
    for(size_t i = TP.ConeTree.size() - 2; i != -1; i--)
    {
       for(size_t j = 0; j != TP.ConeTree[i].size(); j++)
@@ -21,7 +92,6 @@ void ParallelMarking(NormalizedPrevariety &NP, TropicalPrevariety &TP, mutex &Co
          };
          ConeMtx.unlock();
          TP.ConeTree[i][j].Status = 3;
-
          //Iterate over ray indices of TP.ConeTree[i][j]
          //For the first ray index, grab the set and copy it. Call it S.
          //For subsequent ray indices, grab the set, intersect with S, set equal to S.
@@ -33,19 +103,18 @@ void ParallelMarking(NormalizedPrevariety &NP, TropicalPrevariety &TP, mutex &Co
          {
             set<int>::iterator Itr = TP.ConeTree[i][j].RayIndices.begin();
             
-            set<int> SetToTest = NP.NewStructure[k][*Itr];
+            InitializeVectorFromSet(MyVec,NP.NewStructure[k][*Itr]);
             Itr++;
             if (Itr == TP.ConeTree[i][j].RayIndices.end())
             {
-               //PrintPoint(SetToTest);
-               if (SetToTest.size() != 0)
+               if (!SizeOfVectorIsZero(MyVec))
                   WeKnowConeIsNotMaximal = true;
             
             } else while (Itr != TP.ConeTree[i][j].RayIndices.end())
             {
                {
-                  SetToTest = IntersectSets(SetToTest,NP.NewStructure[k][*Itr]);
-                  if (SetToTest.size() == 0)
+                  IntersectVectorWithSet(MyVec,NP.NewStructure[k][*Itr]);
+                  if (SizeOfVectorIsZero(MyVec))
                      break;
                   Itr++;
                   if (Itr == TP.ConeTree[i][j].RayIndices.end())
@@ -83,6 +152,8 @@ NormalizedPrevariety MakeNormalizedPrevariety(TropicalPrevariety &TP)
 	       Itr != TP.ConeTree[i][j].RayIndices.end(); Itr++)
 	       {
 	          NP.NewStructure[i][*Itr].insert(j);
+	          if (NP.NewStructure[i][*Itr].size() > MaxVectorSize)
+	             MaxVectorSize = NP.NewStructure[i][*Itr].size();
 	       };
       };
    };
@@ -95,7 +166,7 @@ void MarkMaximalCones2(TropicalPrevariety &TP, int ProcessCount)
 {
    if (TP.ConeTree.size() < 2)
       return;
-   /*
+   
    for (size_t i = 0; i != TP.ConeTree.size(); i++)
    {
       for (size_t j = 0; j != TP.ConeTree[i].size(); j++)
@@ -104,10 +175,11 @@ void MarkMaximalCones2(TropicalPrevariety &TP, int ProcessCount)
       };
       cout << endl;
    };
-   */
    
+   MaxVectorSize = 0;
    NormalizedPrevariety NP = MakeNormalizedPrevariety(TP);
-   /*
+   cout << MaxVectorSize << endl;
+   
    cout << "Made structure" << endl;
    for (size_t i = 0; i != NP.NewStructure.size(); i++)
    {
@@ -117,7 +189,7 @@ void MarkMaximalCones2(TropicalPrevariety &TP, int ProcessCount)
       };
       cout << endl;
    };
-   */
+   
    {
       Thread_Pool<function<void()>> thread_pool(ProcessCount);
       mutex ConeMtx;

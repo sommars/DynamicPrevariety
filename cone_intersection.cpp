@@ -214,8 +214,8 @@ void ThreadEnum(
                      map<vector<int>, int>::iterator itr2 = Output.RayToIndexMap.find(Ray);
                      if (itr2 == Output.RayToIndexMap.end())
                      {
-                        Output.RayToIndexMap[Ray] = Output.RayToIndexMap.size();
-                        CWI.RayIndices.insert(Output.RayToIndexMap.size());
+                        Output.RayToIndexMap[Ray] = Output.RayToIndexMap.size() - 1;
+                        CWI.RayIndices.insert(Output.RayToIndexMap.size() - 1);
                      } else
                         CWI.RayIndices.insert(itr2->second);
                      OutputMtx.unlock();
@@ -260,14 +260,14 @@ int main(int argc, char* argv[])
    bool Verbose = false;
 
    double RandomSeed = time(NULL);
-   if (true)
+   if (false)
       cout << fixed << "Random seed value: " << RandomSeed << endl;
    srand(RandomSeed);
-   cout << rand() << endl;
+   //cout << rand() << endl;
    
    int ProcessCount;
-   bool DoMixedVol = false;
    vector<vector<vector<int> > > PolynomialSystemSupport;
+   bool PrintOutputToScreen = false; // Only necessary for Python interface support
    if (argc < 3)
    {
       if (Verbose)
@@ -281,6 +281,7 @@ int main(int argc, char* argv[])
       string SupportString = input.substr(2);
       PolynomialSystemSupport = ParseToSupport(SupportString);
       Verbose = false;
+      PrintOutputToScreen = true;
    } else {
       int n = atoi(argv[1]);
       string SystemName = string(argv[2]);
@@ -303,10 +304,9 @@ int main(int argc, char* argv[])
                                 "reducedcyclicn, cyclicn, random, minors, viviani, hiddenray, and systemfromyue.");
       ProcessCount = atoi(argv[3]);
       Verbose = false;
-      if ((argc >= 5) and (atoi(argv[4]) == 1))
-         DoMixedVol = true;
    };
 
+   bool DoMixedVol = false;
    if (DoMixedVol)
    {
       for (size_t i = 0; i != PolynomialSystemSupport.size(); i++)
@@ -334,7 +334,7 @@ int main(int argc, char* argv[])
    
    for (size_t i = 0; i != PolynomialSystemSupport.size(); i++)
       HullCones.push_back(
-         NewHull(PolynomialSystemSupport[i], VectorForOrientation, true));
+         NewHull(PolynomialSystemSupport[i], VectorForOrientation, Verbose));
 
    // Initialize each cone's PolytopesVisited object
    for(int i = 0; i != HullCones.size(); i++)
@@ -450,7 +450,7 @@ int main(int argc, char* argv[])
    
    
    clock_t MarkingTimeStart = clock();
-   MarkMaximalCones2(Output, ProcessCount);
+   MarkMaximalCones(Output, ProcessCount);
    double MarkingTime = double(clock() - MarkingTimeStart) / CLOCKS_PER_SEC;
    
    clock_t PrintingTimeStart = clock();
@@ -471,32 +471,42 @@ int main(int argc, char* argv[])
    s << "Sorting time: " << SortingTime << endl;
    s << "Pretropisms: " << Output.RayToIndexMap.size() << endl;
    s << "Total Alg time: " << TotalAlgTime << endl;
-   ofstream OutFile ("output.txt");
-   OutFile << s.str();
-   OutFile.close();
+   if (PrintOutputToScreen)
+   {
+   	  cout << s.str();
+   }
+   else
+   {
+      ofstream OutFile ("output.txt");
+      OutFile << s.str();
+      OutFile.close();
+   };
    double PrintingTime = double(clock() - PrintingTimeStart) / CLOCKS_PER_SEC;
    int PositiveCount = 0; int ZeroCount = 0; int NegativeCount = 0;
-   for(map<vector<int>, int>::iterator itr = Output.RayToIndexMap.begin();
-   itr != Output.RayToIndexMap.end();
-   ++itr)
+   if (Verbose)
    {
-      int testval = itr->first[itr->first.size() - 1];
-      if (testval > 0)
-      {
-      PositiveCount++;
-      };
-      if (testval == 0)
-      {
-      ZeroCount++;
-      };
-      if (testval < 0)
-      {
-      NegativeCount++;
-      };    
+		  for(map<vector<int>, int>::iterator itr = Output.RayToIndexMap.begin();
+		  itr != Output.RayToIndexMap.end();
+		  ++itr)
+		  {
+		     int testval = itr->first[itr->first.size() - 1];
+		     if (testval > 0)
+		     {
+		        PositiveCount++;
+		     };
+		     if (testval == 0)
+		     {
+		        ZeroCount++;
+		     };
+		     if (testval < 0)
+		     {
+		        NegativeCount++;
+		     };    
+      }
+		  cout << "PositiveCount:" << PositiveCount << endl;
+		  cout << "ZeroCount: " << ZeroCount << endl;
+		  cout << "NegativeCount: " << NegativeCount << endl;
    }
-   cout << "PositiveCount:" << PositiveCount << endl;
-   cout << "ZeroCount: " << ZeroCount << endl;
-   cout << "NegativeCount: " << NegativeCount << endl;
    if (false)
    {
       cout << "------ Run data ------" << endl;

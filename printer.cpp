@@ -3,9 +3,13 @@
 //------------------------------------------------------------------------------
 void PrintPoint(vector<int> &Point)
 {
-   cout << "{ ";
-   for (vector<int>::iterator it=Point.begin(); it != Point.end(); it++)
-      cout << (*it) << " ";
+   cout << "{";
+   for(size_t i = 0; i != Point.size(); i++)
+   {
+      cout << Point[i];
+      if (i != Point.size() - 1)
+      	cout << ",";
+   };
    cout << "}" << endl;
 }
 
@@ -141,11 +145,11 @@ void PrintMaximalCones(TropicalPrevariety &TP, stringstream &s)
             continue;
          MaximalConeCounts[i]++;
          set<int>::iterator it;
-         s << "{ ";
+         s << "{";
          for (it=TP.ConeTree[i][j].RayIndices.begin();
               it != TP.ConeTree[i][j].RayIndices.end();
               it++)
-            s << (*it) << " ";
+            s << (*it) << ",";
          s << "}" << endl;
       };
    };
@@ -159,11 +163,11 @@ void PrintMaximalCones(TropicalPrevariety &TP, stringstream &s)
    for (size_t j = 0; j != TP.ConeTree[Dim].size(); j++)
    {
       set<int>::iterator it;
-      s << "{ ";
+      s << "{";
       for (it=TP.ConeTree[Dim][j].RayIndices.begin();
            it != TP.ConeTree[Dim][j].RayIndices.end();
            it++)
-         s << (*it) << " ";
+         s << (*it) << ",";
       s << "}" << endl;
       MaximalConeCounts[Dim]++;
    };

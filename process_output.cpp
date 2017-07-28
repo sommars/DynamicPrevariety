@@ -10,9 +10,9 @@ void StreamRayToIndexMap(TropicalPrevariety &TP, stringstream &s)
        itr != TP.RayToIndexMap.end();
        ++itr)
    {
-      s << itr->second << ": { ";
+      s << itr->second << ": {";
       for (size_t i = 0; i != itr->first.size(); i++)
-         s << itr->first[i] << " ";
+         s << itr->first[i] << ",";
       s << "}" << endl;
    }
    return;

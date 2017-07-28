@@ -2,8 +2,7 @@
 	#Cyclic 4
 	R.<x1,x2,x3,x4> = QQ[]
 	polys = [x1+x2+x3+x4,x1*x2+x2*x3+x3*x4+x4*x1,x1*x2*x3+x2*x3*x4+x3*x4*x1+x4*x1*x2]
-	support = [[[Integer(j) for j in i] for i in poly.exponents()] for poly in polys]
-	TropicalPrevariety(support)
+	TropicalPrevariety(polys)
 	#Should be equivalent (up to homogenization) to:
 	R.ideal(polys).groebner_fan().tropical_intersection().rays()
 
@@ -22,8 +21,7 @@
 	+ y_7*y_1*y_2*y_3*y_4,y_1*y_2*y_3*y_4*y_5*y_6 + y_1*y_2*y_3*y_4*y_5*y_6*y_7
 	+ y_2*y_3*y_4*y_5*y_6*y_7+ y_3*y_4*y_5*y_6*y_7*y_1 + y_4*y_5*y_6*y_7*y_1*y_2
 	+ y_5*y_6*y_7*y_1*y_2*y_3+ y_6*y_7*y_1*y_2*y_3*y_4 + y_7*y_1*y_2*y_3*y_4*y_5]
-	support = [[[Integer(j) for j in i] for i in poly.exponents()] for poly in polys]
-	TropicalPrevariety(support)
+	TropicalPrevariety(polys)
 """
 
 from subprocess import Popen, PIPE
@@ -31,10 +29,27 @@ from subprocess import Popen, PIPE
 import os, inspect
 pathToPrevariety = os.path.dirname(inspect.stack()[0][1]) + '/'
 
-def TropicalPrevariety(support, ProcessCount = 1):
-	support = str(support)
-	support = support.replace("], ", "]")
-	support = support.replace(" ","")
+def ParseOutput(s):
+	IndexToRayMap = {}
+	ConesList = []
+	Rays = []
+	for l in s.splitlines():
+		if "vector" in l: # We are finished
+			break
+		if ":" in l: # it is a ray
+			(Index,Ray) = l.split(":")
+			Ray = eval(Ray.replace("{","[").replace("}","]"))
+			Rays.append(Ray)
+			IndexToRayMap[eval(Index.replace(":",""))] = Ray
+			continue
+		if "{" in l: # it is a cone
+			ConesList.append(Cone([IndexToRayMap[i] for i in eval(l.replace("{","[").replace("}","]"))]))
+			continue
+	Rays.sort()
+	return (ConesList, Rays)
+
+def TropicalPrevariety(polys, ProcessCount = 1):
+	support = str([[[Integer(j) for j in i] for i in poly.exponents()] for poly in polys]).replace("], ", "]").replace(" ","")
 	if ProcessCount < 10:
 	   support = '0' + str(ProcessCount) + support
 	else: 
@@ -43,7 +58,7 @@ def TropicalPrevariety(support, ProcessCount = 1):
 	prevariety = Popen(
 		pathToPrevariety + "prevariety", stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=true)
 	ans, err = prevariety.communicate(input = support)
-	print(ans)
+	
 	#if len(ans) > 0 and ans[0] != '[':
 	#	raise Exception("Internal error in tropical_prevariety")
-	return
+	return ParseOutput(ans)

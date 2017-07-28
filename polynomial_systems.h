@@ -19,4 +19,5 @@ vector<vector<vector<int> > > HiddenRay(int n);
 //------------------------------------------------------------------------------
 vector<vector<vector<int> > > FourByFourMinors(int n);
 
-
+//------------------------------------------------------------------------------
+vector<vector<vector<int> > > SystemFromYue(int n);

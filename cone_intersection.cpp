@@ -296,9 +296,11 @@ int main(int argc, char* argv[])
          PolynomialSystemSupport = Viviani(0);
       else if (SystemName == "hiddenray")
          PolynomialSystemSupport = HiddenRay(0);
+      else if (SystemName == "systemfromyue")
+         PolynomialSystemSupport = SystemFromYue(0);
       else
          throw invalid_argument("The only supported systems are: "
-                                "reducedcyclicn, cyclicn, random, minors, viviani, and hiddenray.");
+                                "reducedcyclicn, cyclicn, random, minors, viviani, hiddenray, and systemfromyue.");
       ProcessCount = atoi(argv[3]);
       Verbose = false;
       if ((argc >= 5) and (atoi(argv[4]) == 1))

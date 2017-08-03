@@ -450,7 +450,7 @@ int main(int argc, char* argv[])
    
    
    clock_t MarkingTimeStart = clock();
-   MarkMaximalCones(Output, ProcessCount);
+   MarkMaximalCones2(Output, ProcessCount);
    double MarkingTime = double(clock() - MarkingTimeStart) / CLOCKS_PER_SEC;
    
    clock_t PrintingTimeStart = clock();

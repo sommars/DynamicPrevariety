@@ -21,3 +21,6 @@ vector<vector<vector<int> > > FourByFourMinors(int n);
 
 //------------------------------------------------------------------------------
 vector<vector<vector<int> > > SystemFromYue(int n);
+
+//------------------------------------------------------------------------------
+vector<vector<vector<int> > > Grassmannian3by7(int n);

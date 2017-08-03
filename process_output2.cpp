@@ -166,30 +166,10 @@ void MarkMaximalCones2(TropicalPrevariety &TP, int ProcessCount)
 {
    if (TP.ConeTree.size() < 2)
       return;
-   
-   for (size_t i = 0; i != TP.ConeTree.size(); i++)
-   {
-      for (size_t j = 0; j != TP.ConeTree[i].size(); j++)
-      {
-	       PrintPoint(TP.ConeTree[i][j].RayIndices);
-      };
-      cout << endl;
-   };
-   
+
    MaxVectorSize = 0;
+
    NormalizedPrevariety NP = MakeNormalizedPrevariety(TP);
-   cout << MaxVectorSize << endl;
-   
-   cout << "Made structure" << endl;
-   for (size_t i = 0; i != NP.NewStructure.size(); i++)
-   {
-      for (size_t j = 0; j != NP.NewStructure[i].size(); j++)
-      {
-         PrintPoint(NP.NewStructure[i][j]);
-      };
-      cout << endl;
-   };
-   
    {
       Thread_Pool<function<void()>> thread_pool(ProcessCount);
       mutex ConeMtx;

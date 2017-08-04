@@ -117,3 +117,13 @@ vector<vector<vector<int> > > ParseToSupport(string &Input)
 
    return Result;
 };
+
+//------------------------------------------------------------------------------
+vector<vector<vector<int> > > ParseSupportFile(string &FileName)
+{
+   ifstream t(FileName);
+   string str((std::istreambuf_iterator<char>(t)),std::istreambuf_iterator<char>());
+   str.erase(std::remove(str.begin(), str.end(), '\n'), str.end());
+   str = "[" + str + "]";
+   return ParseToSupport(str);
+};

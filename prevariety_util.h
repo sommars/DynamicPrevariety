@@ -19,3 +19,6 @@ double DoubleInnerProduct(vector<int> &V1, vector<double> &V2);
 
 //------------------------------------------------------------------------------
 vector<vector<vector<int> > > ParseToSupport(string &Input);
+
+//------------------------------------------------------------------------------
+vector<vector<vector<int> > > ParseSupportFile(string &FileName);

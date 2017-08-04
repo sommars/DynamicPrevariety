@@ -1,4 +1,4 @@
-#include "soplex_test.h"
+#include "convex_hull.h"
 
 //------------------------------------------------------------------------------
 void StreamRayToIndexMap(TropicalPrevariety &TP, stringstream &s);

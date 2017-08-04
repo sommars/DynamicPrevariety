@@ -21,9 +21,6 @@ void PrintPointForPython(vector<int> &Point);
 void PrintPointsForPython(vector<vector<int> > &Points);
 
 //------------------------------------------------------------------------------
-void printLP(SPxLP &w);
-
-//------------------------------------------------------------------------------
 void PrintMaximalCones(TropicalPrevariety &TP, stringstream &s);
 
 //------------------------------------------------------------------------------

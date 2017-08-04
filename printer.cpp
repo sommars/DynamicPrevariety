@@ -74,61 +74,6 @@ int toint(float r)
 };
 
 //------------------------------------------------------------------------------
-void printLP(SPxLP &w)
-{
-   // Prints the SoPlex LP nicely
-   cout << "LP has " << w.nRows() << "\trows and\n       ";
-   cout << w.nCols() << "\tcolumns" << endl;
-   
-   int nr=w.nRows();
-   int nc=w.nCols();
-
-   for(int i=0;i<nr;i++)
-   {
-      for(int j=0;j<nc;j++)
-      {
-         LPRow R;
-         w.getRow(i,R);
-         cout<<R.rowVector()[j]<<" ";
-      }
-      cout << endl;
-   }
-   cout << endl;
-
-   for(int i=0;i<nr;i++)
-   {
-      for(int j=0;j<nc;j++)
-      {
-         LPCol C;
-         w.getCol(j,C);
-         cout << C.colVector()[i]<<" ";
-      }
-      cout << endl;
-   }
-
-   cout << "cols:" << endl;
-
-   for(int j=0;j<nc;j++)
-   {
-      LPCol C;
-      w.getCol(j,C);
-      cout << C.lower() << " " << C.upper() << " " << C.obj() << endl;
-      cout << toint(C.lower()) << " " << toint(C.upper());
-      cout << " " << toint(C.obj()) << endl;
-   }
-
-   cout<<"rows:"<<endl;
-
-   for(int i=0;i<nr;i++)
-   {
-      LPRow R;
-      w.getRow(i,R);
-      cout << toint(R.lhs()) << " " << toint(R.rhs());
-      cout << " " << R.type() << endl;
-   }
-}
-
-//------------------------------------------------------------------------------
 void PrintMaximalCones(TropicalPrevariety &TP, stringstream &s)
 {
    if (TP.ConeTree.size() == 0)

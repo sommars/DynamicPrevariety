@@ -10,38 +10,6 @@ inline C_Polyhedron IntersectCones(C_Polyhedron ph1, C_Polyhedron &ph2)
 };
 
 //------------------------------------------------------------------------------
-inline LPRowSetReal ConstraintSystemToSoplexRows(const Constraint_System &cs)
-{
-   // Converts a PPL Constraint_System to an LPRowSetReal for consumption
-   // by SoPlex.
-   LPRowSetReal Rows;
-   for (Constraint_System::const_iterator c = cs.begin(), cs_end = cs.end();
-        c != cs_end;
-        c++)
-   {
-      DSVector NewRow(c->space_dimension());
-      for (size_t i = 0; i < c->space_dimension(); i++)
-      {
-         double val = raw_value(c->coefficient(Variable(i))).get_ui();
-         if (c->coefficient(Variable(i)) < 0)
-            val *= -1;
-         NewRow.add(i, val);
-      };
-      if (c->is_equality())
-         Rows.add(LPRow(0, NewRow, 0));
-      else
-      {
-         stringstream s;
-         s << c->inhomogeneous_term();
-         int ToAppend;
-         istringstream(s.str()) >> ToAppend;
-         Rows.add(LPRow(-1 * ToAppend, NewRow, infinity));
-      };
-   };
-   return Rows;
-};
-
-//------------------------------------------------------------------------------
 inline vector<vector<int> > FindInitialForm(
    vector<vector<int> > &Points, vector<int> &Vector)
 {

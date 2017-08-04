@@ -1,4 +1,7 @@
 #include "prevariety_util.h"
+#include <string>
+#include <sstream>
+#include <iostream>
 
 //------------------------------------------------------------------------------
 vector<int> GeneratorToPoint(Generator &g, bool KnockOffLastTerm)

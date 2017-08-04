@@ -1,4 +1,4 @@
-#include "soplex_test.h"
+#include "process_input.h"
 
 //------------------------------------------------------------------------------
 void StreamRayToIndexMap(TropicalPrevariety &TP, stringstream &s);

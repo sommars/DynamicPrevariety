@@ -268,6 +268,17 @@ int main(int argc, char* argv[])
    int ProcessCount;
    vector<vector<vector<int> > > PolynomialSystemSupport;
    bool PrintOutputToScreen = false; // Only necessary for Python interface support
+   
+   if (argc == 3)
+   {
+      string s = string(argv[1]);
+      PolynomialSystemSupport = ParseSupportFile(s);
+      ProcessCount = atoi(argv[2]);
+   } else
+     throw invalid_argument("Please input a filename and the number of threads to be used.");
+   
+   if (false)
+   {
    if (argc < 3)
    {
       if (Verbose)
@@ -305,7 +316,7 @@ int main(int argc, char* argv[])
       ProcessCount = atoi(argv[3]);
       Verbose = false;
    };
-
+   };
    bool DoMixedVol = false;
    if (DoMixedVol)
    {

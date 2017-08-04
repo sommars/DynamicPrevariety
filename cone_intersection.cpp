@@ -275,7 +275,8 @@ int main(int argc, char* argv[])
       PolynomialSystemSupport = ParseSupportFile(s);
       ProcessCount = atoi(argv[2]);
    } else
-     throw invalid_argument("Please input a filename and the number of threads to be used.");
+     throw invalid_argument("Please input a filename and the number of threads "
+        "to be used.\n For example:\n ./prevariety ./examples/cyclic4 1.");
    
    if (false)
    {

@@ -270,6 +270,10 @@ int main(int argc, char* argv[])
    if (argc == 3)
    {
       string s = string(argv[1]);
+      ifstream f(s.c_str());
+      if (!f.good())
+         throw invalid_argument("Please input a valid filename.");
+         
       PolynomialSystemSupport = ParseSupportFile(s);
       ProcessCount = atoi(argv[2]);
    } else
@@ -280,13 +284,8 @@ int main(int argc, char* argv[])
    if (DoMixedVol)
    {
       for (size_t i = 0; i != PolynomialSystemSupport.size(); i++)
-      {
          for (size_t j = 0; j != PolynomialSystemSupport[i].size(); j++)
-         {
             PolynomialSystemSupport[i][j].push_back((rand() % 100000) + 1);
-         };
-      };
-   
    };
    if (ProcessCount > thread::hardware_concurrency())
    {

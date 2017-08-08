@@ -1,6 +1,5 @@
-// Various print methods that are used or were used at one point.
-
-#include "polynomial_systems.h"
+#include "prevariety_types.h"
+#include "prevariety_inlines.h"
 
 //------------------------------------------------------------------------------
 void PrintPoint(vector<int> &Point);

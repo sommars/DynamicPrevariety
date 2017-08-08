@@ -263,11 +263,9 @@ int main(int argc, char* argv[])
    if (false)
       cout << fixed << "Random seed value: " << RandomSeed << endl;
    srand(RandomSeed);
-   //cout << rand() << endl;
    
    int ProcessCount;
    vector<vector<vector<int> > > PolynomialSystemSupport;
-   bool PrintOutputToScreen = false; // Only necessary for Python interface support
    
    if (argc == 3)
    {
@@ -278,46 +276,6 @@ int main(int argc, char* argv[])
      throw invalid_argument("Please input a filename and the number of threads "
         "to be used.\n For example:\n ./prevariety ./examples/cyclic4 1.");
    
-   if (false)
-   {
-   if (argc < 3)
-   {
-      if (Verbose)
-      {
-         cout << "Expected three arguments. "
-                 "Waiting for user input system..." << endl;
-      };
-      string input;
-      cin >> input;
-      ProcessCount = stoi(input.substr(0,2));
-      string SupportString = input.substr(2);
-      PolynomialSystemSupport = ParseToSupport(SupportString);
-      Verbose = false;
-      PrintOutputToScreen = true;
-   } else {
-      int n = atoi(argv[1]);
-      string SystemName = string(argv[2]);
-      if (SystemName == "reducedcyclicn")
-         PolynomialSystemSupport = CyclicN(n, true);
-      else if (SystemName == "cyclicn")
-         PolynomialSystemSupport = CyclicN(n, false);
-      else if (SystemName == "random")
-         PolynomialSystemSupport = RandomSimplices(n);
-      else if (SystemName == "minors")
-         PolynomialSystemSupport = FourByFourMinors(0);
-      else if (SystemName == "viviani")
-         PolynomialSystemSupport = Viviani(0);
-      else if (SystemName == "hiddenray")
-         PolynomialSystemSupport = HiddenRay(0);
-      else if (SystemName == "systemfromyue")
-         PolynomialSystemSupport = SystemFromYue(0);
-      else
-         throw invalid_argument("The only supported systems are: "
-                                "reducedcyclicn, cyclicn, random, minors, viviani, hiddenray, and systemfromyue.");
-      ProcessCount = atoi(argv[3]);
-      Verbose = false;
-   };
-   };
    bool DoMixedVol = false;
    if (DoMixedVol)
    {
@@ -330,7 +288,6 @@ int main(int argc, char* argv[])
       };
    
    };
-   
    if (ProcessCount > thread::hardware_concurrency())
    {
       string ThreadErrorMsg = "Internal error: hardware_concurrency = "
@@ -343,7 +300,6 @@ int main(int argc, char* argv[])
    vector<double> VectorForOrientation;
    for (size_t i = 0; i != PolynomialSystemSupport[0][0].size(); i++)
       VectorForOrientation.push_back(rand());
-   
    for (size_t i = 0; i != PolynomialSystemSupport.size(); i++)
       HullCones.push_back(
          NewHull(PolynomialSystemSupport[i], VectorForOrientation, Verbose));
@@ -456,13 +412,8 @@ int main(int argc, char* argv[])
       thread_pool.finalize();
    }
    
-   clock_t SortingTimeStart = clock();
-   //Output.SortConeTree();
-   double SortingTime = double(clock() - SortingTimeStart) / CLOCKS_PER_SEC;
-   
-   
    clock_t MarkingTimeStart = clock();
-   MarkMaximalCones2(Output, ProcessCount);
+   MarkMaximalCones(Output, ProcessCount);
    double MarkingTime = double(clock() - MarkingTimeStart) / CLOCKS_PER_SEC;
    
    clock_t PrintingTimeStart = clock();
@@ -480,19 +431,12 @@ int main(int argc, char* argv[])
      << TotalInt + ConeIntersectionCount << endl;
    s << "Preintersection time: " << PreintersectTime << endl;
    s << "Marking time: " << MarkingTime << endl;
-   s << "Sorting time: " << SortingTime << endl;
    s << "Pretropisms: " << Output.RayToIndexMap.size() << endl;
    s << "Total Alg time: " << TotalAlgTime << endl;
-   if (PrintOutputToScreen)
-   {
-   	  cout << s.str();
-   }
-   else
-   {
-      ofstream OutFile ("output.txt");
-      OutFile << s.str();
-      OutFile.close();
-   };
+
+   ofstream OutFile ("output.txt");
+   OutFile << s.str();
+   OutFile.close();
    double PrintingTime = double(clock() - PrintingTimeStart) / CLOCKS_PER_SEC;
    int PositiveCount = 0; int ZeroCount = 0; int NegativeCount = 0;
    if (Verbose)
@@ -519,18 +463,4 @@ int main(int argc, char* argv[])
 		  cout << "ZeroCount: " << ZeroCount << endl;
 		  cout << "NegativeCount: " << NegativeCount << endl;
    }
-   if (false)
-   {
-      cout << "------ Run data ------" << endl;
-      cout << "Intersections for building RT: " << TotalInt << endl;
-      cout << "Alg intersections: " << ConeIntersectionCount << endl;
-      cout << "Total intersections: "
-           << TotalInt + ConeIntersectionCount << endl;
-      cout << "Preintersection time: " << PreintersectTime << endl;
-      cout << "Marking time: " << MarkingTime << endl;
-      cout << "Sorting time: " << SortingTime << endl;
-      cout << "Pretropisms: " << Output.RayToIndexMap.size() << endl;
-      cout << "Output Printing time: " << PrintingTime << endl;
-      cout << "Total Alg time: " << TotalAlgTime << endl;
-   };
 }

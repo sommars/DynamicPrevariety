@@ -27,3 +27,6 @@ void StreamPoint(set<int> &Point, stringstream &s);
 
 //------------------------------------------------------------------------------
 void PrintRT(vector<BitsetWithCount> &RT);
+
+//------------------------------------------------------------------------------
+void StreamRayToIndexMap(TropicalPrevariety &TP, stringstream &s);

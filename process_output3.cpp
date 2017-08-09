@@ -1,7 +1,7 @@
-#include "process_output.h"
+#include "process_output3.h"
 
 //------------------------------------------------------------------------------
-void ParallelMarking(TropicalPrevariety &TP, mutex &ConeMtx)
+void ParallelMarkingVersion3(TropicalPrevariety &TP, mutex &ConeMtx)
 {
    for(size_t i = TP.ConeTree.size() - 2; i != -1; i--)
    {
@@ -44,7 +44,7 @@ void ParallelMarking(TropicalPrevariety &TP, mutex &ConeMtx)
 }
 
 //------------------------------------------------------------------------------
-void MarkMaximalCones(TropicalPrevariety &TP, int ProcessCount)
+void MarkMaximalCones3(TropicalPrevariety &TP, int ProcessCount)
 {
    if (TP.ConeTree.size() < 2)
       return;
@@ -54,7 +54,7 @@ void MarkMaximalCones(TropicalPrevariety &TP, int ProcessCount)
       for (size_t i = 0; i != ProcessCount; i++)
       {
          thread_pool.submit(bind(
-            ParallelMarking,
+            ParallelMarkingVersion3,
             ref(TP),
             ref(ConeMtx)));
       }

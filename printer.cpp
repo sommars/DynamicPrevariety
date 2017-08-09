@@ -149,3 +149,21 @@ cout << endl;
    };
 cout << endl;
 };
+
+//------------------------------------------------------------------------------
+void StreamRayToIndexMap(TropicalPrevariety &TP, stringstream &s)
+{
+   // Streams ray to index map. Necessary for interpreting output.
+   if (TP.RayToIndexMap.size() != 0)
+      s << "------ Rays  ------" << endl;
+   for(map<vector<int>, int>::iterator itr = TP.RayToIndexMap.begin();
+       itr != TP.RayToIndexMap.end();
+       ++itr)
+   {
+      s << itr->second << ": {";
+      for (size_t i = 0; i != itr->first.size(); i++)
+         s << itr->first[i] << ",";
+      s << "}" << endl;
+   }
+   return;
+}

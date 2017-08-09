@@ -2,7 +2,7 @@ CC = g++
 CFLAGS = -O3 -std=c++11
 ALLOC = libtcmalloc_minimal.so.4.2.6
 PPLLINKEDFILES = -lppl -lgmpxx -lgmp -lz
-OBJ = prevariety_types.o printer.o prevariety_util.o convex_hull.o process_output.o process_output2.o relation_tables.o cone_intersection.o
+OBJ = prevariety_types.o printer.o prevariety_util.o convex_hull.o process_output.o process_output2.o process_output3.o relation_tables.o cone_intersection.o
 
 all: prevariety
 
@@ -26,6 +26,9 @@ process_output.o: process_output.cpp process_output.h
 
 process_output2.o: process_output2.cpp process_output2.h
 	$(CC) $(CFLAGS) -c process_output2.cpp
+
+process_output3.o: process_output3.cpp process_output3.h
+	$(CC) $(CFLAGS) -c process_output3.cpp
 	
 relation_tables.o: relation_tables.cpp relation_tables.h
 	$(CC) $(CFLAGS) -c relation_tables.cpp

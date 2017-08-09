@@ -1,5 +1,6 @@
 #include "relation_tables.h"
 
+
 int ConeIntersectionCount;
 
 //------------------------------------------------------------------------------
@@ -253,29 +254,37 @@ void ThreadEnum(
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
-
    struct timeval AlgStartTime, AlgEndTime;
    gettimeofday(&AlgStartTime, NULL);
-   // Main program for computing tropical prevarieties.
    bool Verbose = false;
 
    double RandomSeed = time(NULL);
-   if (false)
+   if (Verbose)
       cout << fixed << "Random seed value: " << RandomSeed << endl;
    srand(RandomSeed);
    
    int ProcessCount;
    vector<vector<vector<int> > > PolynomialSystemSupport;
    
-   if (argc == 3)
+   string FileName;
+   if (argc == 2)
    {
-      string s = string(argv[1]);
-      ifstream f(s.c_str());
+      FileName = string(argv[1]);
+      ifstream f(FileName.c_str());
       if (!f.good())
          throw invalid_argument("Please input a valid filename.");
          
-      PolynomialSystemSupport = ParseSupportFile(s);
-      ProcessCount = atoi(argv[2]);
+      PolynomialSystemSupport = ParseSupportFile(FileName);
+      ProcessCount = 1;
+   } else if (argc == 3) 
+   {
+      FileName = string(argv[1]);
+      ifstream f(FileName.c_str());
+      if (!f.good())
+         throw invalid_argument("Please input a valid filename.");
+         
+      PolynomialSystemSupport = ParseSupportFile(FileName);
+      ProcessCount = atoi(argv[2]);   
    } else
      throw invalid_argument("Please input a filename and the number of threads "
         "to be used.\n For example:\n ./prevariety ./examples/cyclic4 1.");
@@ -412,7 +421,7 @@ int main(int argc, char* argv[])
    }
    
    clock_t MarkingTimeStart = clock();
-   MarkMaximalCones(Output, ProcessCount);
+   MarkMaximalCones3(Output, ProcessCount);
    double MarkingTime = double(clock() - MarkingTimeStart) / CLOCKS_PER_SEC;
    
    clock_t PrintingTimeStart = clock();

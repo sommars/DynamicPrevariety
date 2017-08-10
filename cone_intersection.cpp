@@ -176,6 +176,7 @@ void ThreadEnum(
                   continue;
                
                ConeWithIndicator CWI;
+               CWI.HOPolyhedron = i->HOPolyhedron;
                CWI.Status = 2;
                
               //cout << i->HOPolyhedron.affine_dimension() << endl;
@@ -200,7 +201,9 @@ void ThreadEnum(
                   map<vector<int>, int>::iterator itr = Output.RayToIndexMap.find(Ray);
                   if (itr == Output.RayToIndexMap.end())
                   {
-                     Output.RayToIndexMap[Ray] = Output.RayToIndexMap.size() - 1;
+                     int Index = Output.RayToIndexMap.size();
+                     Output.RayToIndexMap[Ray] = Index;
+                     Output.IndexToRayMap[Index] = Ray;
                      CWI.RayIndices.insert(Output.RayToIndexMap.size() - 1);
                   } else
                      CWI.RayIndices.insert(itr->second);
@@ -215,7 +218,9 @@ void ThreadEnum(
                      map<vector<int>, int>::iterator itr2 = Output.RayToIndexMap.find(Ray);
                      if (itr2 == Output.RayToIndexMap.end())
                      {
-                        Output.RayToIndexMap[Ray] = Output.RayToIndexMap.size() - 1;
+                        int Index = Output.RayToIndexMap.size();
+                        Output.RayToIndexMap[Ray] = Index;
+                        Output.IndexToRayMap[Index] = Ray;
                         CWI.RayIndices.insert(Output.RayToIndexMap.size() - 1);
                      } else
                         CWI.RayIndices.insert(itr2->second);
@@ -421,11 +426,13 @@ int main(int argc, char* argv[])
    }
    
    clock_t MarkingTimeStart = clock();
-   MarkMaximalCones3(Output, ProcessCount);
+
+   MarkMaximalCones2(Output, ProcessCount);
+   //MarkMaximalCones3(Output, ProcessCount);
    double MarkingTime = double(clock() - MarkingTimeStart) / CLOCKS_PER_SEC;
    
-   clock_t PrintingTimeStart = clock();
    stringstream s;
+   clock_t PrintingTimeStart = clock();
    StreamRayToIndexMap(Output, s);
    PrintMaximalCones(Output, s);
   

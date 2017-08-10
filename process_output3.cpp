@@ -1,8 +1,23 @@
 #include "process_output3.h"
 
 //------------------------------------------------------------------------------
-void ParallelMarkingVersion3(TropicalPrevariety &TP, mutex &ConeMtx)
+C_Polyhedron GetConeFromTree(TropicalPrevariety &TP, int i, int j)
 {
+   vector<vector<int> > Rays;
+   for (set<int>::iterator Itr = TP.ConeTree[i][j].RayIndices.begin(); 
+      Itr != TP.ConeTree[i][j].RayIndices.end(); Itr++)
+      Rays.push_back(TP.IndexToRayMap[*Itr]);
+   return RaysToCone(Rays);
+}
+
+//------------------------------------------------------------------------------
+void ParallelMarkingVersion3(TropicalPrevariety TP, mutex &ConeMtx)
+{
+   cout << TP.ConeTree[0][0].Status << endl;
+   cout << TP.ConeTree[0][0].HOPolyhedron.affine_dimension() << endl;
+   cout << TP.ConeTree[0][0].HOPolyhedron.minimized_generators() << endl;
+   cout << "AAAAAAAAAAAA" << endl;
+
    for(size_t i = TP.ConeTree.size() - 2; i != -1; i--)
    {
       for(size_t j = 0; j != TP.ConeTree[i].size(); j++)
@@ -23,8 +38,10 @@ void ParallelMarkingVersion3(TropicalPrevariety &TP, mutex &ConeMtx)
             {
                if (TP.ConeTree[k][l].Status == 0)
                   continue;
-                  
-               if (Set1IsSubsetOfSet2(TP.ConeTree[i][j].RayIndices, TP.ConeTree[k][l].RayIndices))
+               cout << "------------" << endl;
+               cout << TP.ConeTree[i][j].HOPolyhedron.minimized_generators() << endl << endl;
+               cout << TP.ConeTree[k][l].HOPolyhedron.minimized_generators() << endl<< endl;
+               if (TP.ConeTree[k][l].HOPolyhedron.contains(TP.ConeTree[i][j].HOPolyhedron))
                {
                   WeKnowConeIsNotMaximal = true;
                   TP.ConeTree[i][j].Status = 0;
@@ -43,11 +60,27 @@ void ParallelMarkingVersion3(TropicalPrevariety &TP, mutex &ConeMtx)
    return;
 }
 
+
 //------------------------------------------------------------------------------
 void MarkMaximalCones3(TropicalPrevariety &TP, int ProcessCount)
 {
    if (TP.ConeTree.size() < 2)
       return;
+
+   // Need to reset the cone tree. Anything that we think is maximal only *may* be maximal.
+   for (size_t i = 0; i != TP.ConeTree.size() - 1; i++)
+   {
+      for (size_t j = 0; j != TP.ConeTree[i].size(); j++)
+      {
+         if (TP.ConeTree[i][j].Status == 1) {
+            TP.ConeTree[i][j].Status = 2;
+         };
+      };
+   };
+   cout << "A" << endl;
+   TP.ConeTree[0][0].Status = 100;
+   cout << TP.ConeTree[0][0].HOPolyhedron.minimized_generators() << endl;
+
    {
       Thread_Pool<function<void()>> thread_pool(ProcessCount);
       mutex ConeMtx;

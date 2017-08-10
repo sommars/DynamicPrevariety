@@ -66,6 +66,7 @@ struct ConeWithIndicator
    // Helper object used to aide in parsing output of algorithm
    set<int> RayIndices;
    int Status;
+   NNC_Polyhedron HOPolyhedron;
    // 0 means that this cone is NOT maximal.
    // 1 means that this cone is maximal.
    // 2 means that this cone's status is unknown, and it is not being followed.
@@ -78,6 +79,7 @@ struct TropicalPrevariety
    // TODO: This could probably be improved with sorting beforehand.
    // Output object. Only outputs all the maximal cones.
    map<vector<int>, int> RayToIndexMap;
+   map<int, vector<int>> IndexToRayMap;
    vector<vector<ConeWithIndicator > > ConeTree;
 };
 

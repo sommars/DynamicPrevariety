@@ -127,3 +127,23 @@ vector<vector<vector<int> > > ParseSupportFile(string &FileName)
    str = "[" + str + "]";
    return ParseToSupport(str);
 };
+
+//------------------------------------------------------------------------------
+C_Polyhedron RaysToCone(vector<vector<int> > Rays)
+{
+   Generator_System gs;
+   for (vector<vector<int> >::iterator itr=Rays.begin();
+        itr != Rays.end();
+        itr++)
+   {
+      Linear_Expression LE;
+      for (size_t i = 0; i != itr->size(); i++)
+         LE += Variable(i) * ((*itr)[i]);
+      gs.insert(ray(LE));
+   };
+   Linear_Expression LE;
+   for (size_t i = 0; i != Rays[0].size(); i++)
+      LE += Variable(i) * 0;
+   gs.insert(point(LE));
+   return C_Polyhedron(gs);
+};

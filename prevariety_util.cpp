@@ -129,7 +129,7 @@ vector<vector<vector<int> > > ParseSupportFile(string &FileName)
 };
 
 //------------------------------------------------------------------------------
-C_Polyhedron RaysToCone(vector<vector<int> > Rays)
+C_Polyhedron RaysToCone(vector<vector<int> > &Rays)
 {
    Generator_System gs;
    for (vector<vector<int> >::iterator itr=Rays.begin();

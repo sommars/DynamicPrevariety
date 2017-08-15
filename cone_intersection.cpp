@@ -264,8 +264,6 @@ int main(int argc, char* argv[])
    bool Verbose = false;
 
    double RandomSeed = time(NULL);
-   if (Verbose)
-      cout << fixed << "Random seed value: " << RandomSeed << endl;
    srand(RandomSeed);
    
    int ProcessCount;
@@ -428,7 +426,7 @@ int main(int argc, char* argv[])
    clock_t MarkingTimeStart = clock();
 
    MarkMaximalCones2(Output, ProcessCount);
-   //MarkMaximalCones3(Output, ProcessCount);
+   MarkMaximalCones3(Output, ProcessCount);
    double MarkingTime = double(clock() - MarkingTimeStart) / CLOCKS_PER_SEC;
    
    stringstream s;
@@ -448,7 +446,8 @@ int main(int argc, char* argv[])
    s << "Marking time: " << MarkingTime << endl;
    s << "Pretropisms: " << Output.RayToIndexMap.size() << endl;
    s << "Total Alg time: " << TotalAlgTime << endl;
-
+   s << fixed << "Random Seed: " << RandomSeed << endl;
+   
    ofstream OutFile ("output.txt");
    OutFile << s.str();
    OutFile.close();

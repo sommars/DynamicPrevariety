@@ -24,12 +24,14 @@
 	TropicalPrevariety(polys)
 """
 
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, call
 #The below should work for generic machines
 import os, inspect
-pathToPrevariety = os.path.dirname(inspect.stack()[0][1]) + '/'
+pathToPrevariety = os.path.dirname(inspect.stack()[0][1])
 
-def ParseOutput(s):
+def ParseOutput(FileName):
+  with open(FileName,"r") as OutputFile:
+  	s = OutputFile.read()
 	IndexToRayMap = {}
 	ConesList = []
 	Rays = []
@@ -55,10 +57,8 @@ def TropicalPrevariety(polys, ProcessCount = 1):
 	else: 
 	   support = str(ProcessCount) + support
 	
-	prevariety = Popen(
-		pathToPrevariety + "prevariety", stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=true)
-	ans, err = prevariety.communicate(input = support)
+	call([pathToPrevariety + "/prevariety", pathToPrevariety + "/examples/cyclic/cyclic8"])
 	
 	#if len(ans) > 0 and ans[0] != '[':
 	#	raise Exception("Internal error in tropical_prevariety")
-	return ParseOutput(ans)
+	return ParseOutput(pathToPrevariety + "/output.txt")

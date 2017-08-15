@@ -10,6 +10,15 @@ inline C_Polyhedron IntersectCones(C_Polyhedron ph1, C_Polyhedron &ph2)
 };
 
 //------------------------------------------------------------------------------
+inline NNC_Polyhedron IntersectCones(NNC_Polyhedron ph1, NNC_Polyhedron &ph2)
+{
+   // Intersect C_Polyhedron
+   ph1.add_constraints(ph2.constraints());
+   ph1.affine_dimension();
+   return ph1;
+};
+
+//------------------------------------------------------------------------------
 inline vector<vector<int> > FindInitialForm(
    vector<vector<int> > &Points, vector<int> &Vector)
 {

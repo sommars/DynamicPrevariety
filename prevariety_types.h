@@ -66,7 +66,7 @@ struct ConeWithIndicator
    // Helper object used to aide in parsing output of algorithm
    set<int> RayIndices;
    int Status;
-   NNC_Polyhedron HOPolyhedron;
+   C_Polyhedron HOPolyhedron;
    // 0 means that this cone is NOT maximal.
    // 1 means that this cone is maximal.
    // 2 means that this cone's status is unknown, and it is not being followed.

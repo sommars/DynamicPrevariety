@@ -7,30 +7,38 @@ C_Polyhedron GetConeFromTree(TropicalPrevariety &TP, int i, int j)
    for (set<int>::iterator Itr = TP.ConeTree[i][j].RayIndices.begin(); 
       Itr != TP.ConeTree[i][j].RayIndices.end(); Itr++)
       Rays.push_back(TP.IndexToRayMap[*Itr]);
-   return RaysToCone(Rays);
+   
+   Generator_System gs;
+   for (vector<vector<int> >::iterator itr=Rays.begin();
+        itr != Rays.end();
+        itr++)
+   {
+      Linear_Expression LE;
+      for (size_t i = 0; i != itr->size(); i++)
+         LE += Variable(i) * ((*itr)[i]);
+      gs.insert(ray(LE));
+   };
+   Linear_Expression LE;
+   for (size_t i = 0; i != Rays[0].size(); i++)
+      LE += Variable(i) * 0;
+   gs.insert(point(LE));
+   
+   return C_Polyhedron(gs);
 }
 
 //------------------------------------------------------------------------------
-void ParallelMarkingVersion3(TropicalPrevariety TP, mutex &ConeMtx)
+void LinearMarkingVersion3(TropicalPrevariety &TP)
 {
-   cout << TP.ConeTree[0][0].Status << endl;
-   cout << TP.ConeTree[0][0].HOPolyhedron.affine_dimension() << endl;
-   cout << TP.ConeTree[0][0].HOPolyhedron.minimized_generators() << endl;
-   cout << "AAAAAAAAAAAA" << endl;
-
    for(size_t i = TP.ConeTree.size() - 2; i != -1; i--)
    {
       for(size_t j = 0; j != TP.ConeTree[i].size(); j++)
       {
-         ConeMtx.lock();
          if (TP.ConeTree[i][j].Status != 2)
          {
-            ConeMtx.unlock();
             continue;
          };
-         ConeMtx.unlock();
          TP.ConeTree[i][j].Status = 3;
-         
+
          bool WeKnowConeIsNotMaximal = false;
          for(size_t k = TP.ConeTree.size() - 1; k != i; k--)
          {
@@ -38,9 +46,6 @@ void ParallelMarkingVersion3(TropicalPrevariety TP, mutex &ConeMtx)
             {
                if (TP.ConeTree[k][l].Status == 0)
                   continue;
-               cout << "------------" << endl;
-               cout << TP.ConeTree[i][j].HOPolyhedron.minimized_generators() << endl << endl;
-               cout << TP.ConeTree[k][l].HOPolyhedron.minimized_generators() << endl<< endl;
                if (TP.ConeTree[k][l].HOPolyhedron.contains(TP.ConeTree[i][j].HOPolyhedron))
                {
                   WeKnowConeIsNotMaximal = true;
@@ -60,6 +65,11 @@ void ParallelMarkingVersion3(TropicalPrevariety TP, mutex &ConeMtx)
    return;
 }
 
+//------------------------------------------------------------------------------
+void CleanupOutput(TropicalPrevariety &TP)
+{
+
+};
 
 //------------------------------------------------------------------------------
 void MarkMaximalCones3(TropicalPrevariety &TP, int ProcessCount)
@@ -74,27 +84,12 @@ void MarkMaximalCones3(TropicalPrevariety &TP, int ProcessCount)
       {
          if (TP.ConeTree[i][j].Status == 1) {
             TP.ConeTree[i][j].Status = 2;
+            TP.ConeTree[i][j].HOPolyhedron = GetConeFromTree(TP,i,j);
+            
          };
       };
    };
-   cout << "A" << endl;
-   TP.ConeTree[0][0].Status = 100;
-   cout << TP.ConeTree[0][0].HOPolyhedron.minimized_generators() << endl;
-
-   {
-      Thread_Pool<function<void()>> thread_pool(ProcessCount);
-      mutex ConeMtx;
-      for (size_t i = 0; i != ProcessCount; i++)
-      {
-         thread_pool.submit(bind(
-            ParallelMarkingVersion3,
-            ref(TP),
-            ref(ConeMtx)));
-      }
-      
-      // Wait for all workers to complete.
-      thread_pool.finalize();
-   }
+   LinearMarkingVersion3(TP);
+   CleanupOutput(TP);
    return;
 }
-

@@ -1,5 +1,3 @@
-// Assorted utility functions for computing prevarieties
-
 #include "printer.h"
 
 //------------------------------------------------------------------------------
@@ -24,4 +22,4 @@ vector<vector<vector<int> > > ParseToSupport(string &Input);
 vector<vector<vector<int> > > ParseSupportFile(string &FileName);
 
 //------------------------------------------------------------------------------
-C_Polyhedron RaysToCone(vector<vector<int> > Rays);
+C_Polyhedron RaysToCone(vector<vector<int> > &Rays);

@@ -269,29 +269,24 @@ int main(int argc, char* argv[])
    int ProcessCount;
    vector<vector<vector<int> > > PolynomialSystemSupport;
    
-   string FileName;
-   if (argc == 2)
+
+   if ((argc == 2) || (argc == 3))
    {
+      string FileName;
       FileName = string(argv[1]);
       ifstream f(FileName.c_str());
       if (!f.good())
          throw invalid_argument("Please input a valid filename.");
          
       PolynomialSystemSupport = ParseSupportFile(FileName);
-      ProcessCount = 1;
-   } else if (argc == 3) 
-   {
-      FileName = string(argv[1]);
-      ifstream f(FileName.c_str());
-      if (!f.good())
-         throw invalid_argument("Please input a valid filename.");
-         
-      PolynomialSystemSupport = ParseSupportFile(FileName);
-      ProcessCount = atoi(argv[2]);   
+      if (argc == 3)
+         ProcessCount = atoi(argv[2]);
+      else
+         ProcessCount = 1;
    } else
      throw invalid_argument("Please input a filename and the number of threads "
         "to be used.\n For example:\n ./prevariety ./examples/cyclic4 1.");
-   
+
    bool DoMixedVol = false;
    if (DoMixedVol)
    {

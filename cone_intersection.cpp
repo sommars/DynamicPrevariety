@@ -261,7 +261,7 @@ int main(int argc, char* argv[])
 {
    struct timeval AlgStartTime, AlgEndTime;
    gettimeofday(&AlgStartTime, NULL);
-   bool Verbose = false;
+   bool Verbose = true;
 
    double RandomSeed = time(NULL);
    srand(RandomSeed);

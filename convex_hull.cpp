@@ -6,16 +6,37 @@ vector<Cone> FindHOHullCones(
 	vector<double> &VectorForOrientation)
 {
 
+	Hull NewH = NewHull(H.Points,VectorForOrientation, false, false);
 
+	vector<Cone> Result;
+	cout << H.Cones.size() << " " << NewH.Cones.size() << endl;
+	for (size_t i = 0; i != H.Cones.size(); i++)
+	{
+		bool FoundCone = false;
+		for (size_t j = 0; j != NewH.Cones.size(); j++)
+		{
+			if (H.Cones[i].ClosedPolyhedron.contains(NewH.Cones[j].HOPolyhedron))
+			{
+				NewH.Cones[j].RelationTables = H.Cones[i].RelationTables;
+				NewH.Cones[j].PolytopesVisited = H.Cones[i].PolytopesVisited;
+				Result.push_back(NewH.Cones[j]);
+				FoundCone = true;
+				break;
+			};
+		};
+		if (!FoundCone)
+			cout << "AAAAAAAAAAAAAAAAAAAAA" << endl;
+	};
 
-
+	return Result;
 };
 
 //------------------------------------------------------------------------------
 Hull NewHull(
    vector<vector<int> > &Points,
    vector<double> &VectorForOrientation,
-   bool Verbose)
+   bool Verbose,
+   bool MakeConesClosed)
 {
    // For a given set of points and orientation vector, this function computes
    // the set of half open edge cones for the polytope defined by these points.
@@ -80,8 +101,8 @@ Hull NewHull(
             else
                c = (LE > 0);
                
-
-             c = (LE >= 0);
+  					 if (MakeConesClosed)
+               c = (LE >= 0);
             Constraints.push_back(c);
          };
       };
@@ -116,12 +137,19 @@ Hull NewHull(
                   csHigherDim.insert(Constraints[k]);
             };
             
-            Cone NewCone;
-            NewCone.ClosedPolyhedron = NNC_Polyhedron(csOriginalDim);
-            NewCone.ClosedPolyhedron.minimized_constraints();
-            NewCone.ClosedPolyhedron.minimized_generators();
-            NewCone.ClosedPolyhedron.affine_dimension();
-
+	          Cone NewCone;
+            if (MakeConesClosed)
+            {
+		          NewCone.ClosedPolyhedron = NNC_Polyhedron(csOriginalDim);
+		          NewCone.ClosedPolyhedron.minimized_constraints();
+		          NewCone.ClosedPolyhedron.minimized_generators();
+		          NewCone.ClosedPolyhedron.affine_dimension();
+						} else {
+		          NewCone.HOPolyhedron = NNC_Polyhedron(csOriginalDim);
+		          NewCone.HOPolyhedron.minimized_constraints();
+		          NewCone.HOPolyhedron.minimized_generators();
+		          NewCone.HOPolyhedron.affine_dimension();
+						}
             H.Cones.push_back(NewCone);
             //Introduce it as a strict inequality to describe the rest.
             // Call recursively.

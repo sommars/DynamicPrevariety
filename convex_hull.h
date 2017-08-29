@@ -5,10 +5,16 @@
 #include "prevariety_util.h"
 
 //------------------------------------------------------------------------------
+vector<Cone> FindHOHullCones(
+	Hull &H,
+	vector<double> &VectorForOrientation);
+
+//------------------------------------------------------------------------------
 Hull NewHull(
    vector<vector<int> > &Points,
    vector<double> &VectorForOrientation,
-   bool Verbose);
+   bool Verbose,
+   bool MakeConesClosed);
 
 //------------------------------------------------------------------------------
 void FindFacets(Hull &H);

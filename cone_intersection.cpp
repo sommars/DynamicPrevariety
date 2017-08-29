@@ -1,6 +1,5 @@
 #include "relation_tables.h"
 
-
 int ConeIntersectionCount;
 
 //------------------------------------------------------------------------------
@@ -9,11 +8,13 @@ list<Cone> DoCommonRefinement(
    Cone &NewCone,
    vector<Hull> &Hulls)
 {
+
+cout << "A" << endl;
    // Perform common refinement for the specified cone and set of cones.
    vector<Cone> *HIndex;
    HIndex = &Hulls[HullIndex].Cones;
    BitsetWithCount *RT = &NewCone.RelationTables[HullIndex];
-   list<Cone> Result;
+   list<Cone> TemporaryResult;
    Cone *ConeToTest;
    for (boost::dynamic_bitset<>::size_type i = 0; i != RT->Indices.size(); i++)
    {
@@ -44,14 +45,86 @@ list<Cone> DoCommonRefinement(
       ConeIntersectionCount++;
       Cone TestCone = NewCone;
       TestCone.HOPolyhedron.add_constraints(
-         ConeToTest->HOPolyhedron.constraints());
-      if (TestCone.HOPolyhedron.is_empty())
+         ConeToTest->ClosedPolyhedron.constraints());
+      if (TestCone.HOPolyhedron.affine_dimension() == 0)
+         continue;
+         
+      TestCone.RelationTables = RelationTables;
+
+      TemporaryResult.push_back(TestCone);
+   };
+   if (TemporaryResult.size() == 0)
+   	  return TemporaryResult;
+   
+   Cone MaxCone = *TemporaryResult.begin();
+   
+   list<Cone>::iterator itr;
+   for (itr = TemporaryResult.begin(); itr != TemporaryResult.end(); itr++)
+   {
+      if (itr->HOPolyhedron.affine_dimension() > MaxCone.HOPolyhedron.affine_dimension())
+      	MaxCone = *itr;
+   };
+   
+   // Find ray inside cone of largest dimension 
+ 		vector<double> RandomVector(MaxCone.HOPolyhedron.space_dimension(), 0);
+		Generator_System gs = MaxCone.HOPolyhedron.minimized_generators();
+		for (Generator_System::const_iterator i = gs.begin(),
+		gs_end = gs.end(); i != gs_end; ++i) {
+			for (size_t j = 0; j != MaxCone.HOPolyhedron.space_dimension(); j++) {
+				stringstream s;
+				s << (*i).coefficient(Variable(j));
+				int ToAppend;
+				istringstream(s.str()) >> ToAppend;
+				RandomVector[j] += ToAppend;
+			};
+		};
+
+cout << "B" << endl;
+   vector<Cone> NewCones = FindHOHullCones(Hulls[HullIndex], RandomVector);
+
+cout << "C" << endl;
+   list<Cone> Result;
+   for (boost::dynamic_bitset<>::size_type i = 0; i != RT->Indices.size(); i++)
+   {
+      if (!RT->Indices[i])
+         continue;
+
+      bool SkipIntersection = false;
+      vector<BitsetWithCount> RelationTables(Hulls.size());
+
+cout << "C" << endl;
+      for (size_t j = 0; j != NewCone.RelationTables.size(); j++)
+      {
+         if (!NewCone.PolytopesVisited.Indices[j])
+         {
+            RelationTables[j] = IntersectRTs(
+               NewCones[i].RelationTables[j], NewCone.RelationTables[j]);
+            if (RelationTables[j].Count == 0)
+            {
+               SkipIntersection = true;
+               break;
+            };
+         };
+      };
+
+cout << "DD" << endl;      
+      if (SkipIntersection)
+         continue;
+         
+      Cone TestCone = NewCone;
+      TestCone.HOPolyhedron.add_constraints(
+         NewCones[i].HOPolyhedron.constraints());
+         
+cout << "C" << endl;
+      if (TestCone.HOPolyhedron.affine_dimension() == 0)
          continue;
          
       TestCone.RelationTables = RelationTables;
 
       Result.push_back(TestCone);
    };
+
+cout << "D" << endl;
    
    return Result;
 }
@@ -264,6 +337,7 @@ int main(int argc, char* argv[])
    bool Verbose = true;
 
    double RandomSeed = time(NULL);
+   RandomSeed = 0;
    srand(RandomSeed);
    
    int ProcessCount;
@@ -308,7 +382,7 @@ int main(int argc, char* argv[])
       VectorForOrientation.push_back(rand());
    for (size_t i = 0; i != PolynomialSystemSupport.size(); i++)
       Hulls.push_back(
-         NewHull(PolynomialSystemSupport[i], VectorForOrientation, Verbose));
+         NewHull(PolynomialSystemSupport[i], VectorForOrientation, Verbose, true));
 
    // Initialize each cone's PolytopesVisited object
    for(int i = 0; i != Hulls.size(); i++)
@@ -390,9 +464,10 @@ int main(int argc, char* argv[])
       ThreadQueues.push_back(TQ);
    };
    
+   vector<Cone> StartingHOCones = FindHOHullCones(Hulls[SmallestIndex], VectorForOrientation);
+   
    for (size_t i = 0; i != Hulls[SmallestIndex].Cones.size(); i++)
-      ThreadQueues[i % ProcessCount].SharedCones[0].push_back(
-         Hulls[SmallestIndex].Cones[i]);
+      ThreadQueues[i % ProcessCount].SharedCones[0].push_back(StartingHOCones[i]);
    
    mutex BPMtx;
    mutex OutputMtx;

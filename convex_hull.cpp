@@ -1,9 +1,20 @@
 #include "convex_hull.h"
 
 //------------------------------------------------------------------------------
-vector<Cone> NewHull(
+vector<Cone> FindHOHullCones(
+	Hull &H,
+	vector<double> &VectorForOrientation)
+{
+
+
+
+
+};
+
+//------------------------------------------------------------------------------
+Hull NewHull(
    vector<vector<int> > &Points,
-   vector<double> &VectorForOrientation, 
+   vector<double> &VectorForOrientation,
    bool Verbose)
 {
    // For a given set of points and orientation vector, this function computes
@@ -68,6 +79,9 @@ vector<Cone> NewHull(
                c = (LE >= 0);
             else
                c = (LE > 0);
+               
+
+//             c = (LE > 0);
             Constraints.push_back(c);
          };
       };
@@ -103,7 +117,6 @@ vector<Cone> NewHull(
             };
             
             Cone NewCone;
-            //NewCone.HOPolyhedron = C_Polyhedron(csHigherDim);
             NewCone.HOPolyhedron = NNC_Polyhedron(csOriginalDim);
             NewCone.HOPolyhedron.minimized_constraints();
             NewCone.HOPolyhedron.minimized_generators();
@@ -127,7 +140,7 @@ vector<Cone> NewHull(
       cout << "Number of edges: " << H.Edges.size() << endl;
       cout << "Number of facets: " << H.Facets.size() << endl << endl;
    };
-   return H.Cones;
+   return H;
 }
 
 //------------------------------------------------------------------------------

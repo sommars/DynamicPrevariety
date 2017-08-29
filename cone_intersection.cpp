@@ -7,11 +7,11 @@ int ConeIntersectionCount;
 list<Cone> DoCommonRefinement(
    int HullIndex,
    Cone &NewCone,
-   vector<vector<Cone> > &HullCones)
+   vector<Hull> &Hulls)
 {
    // Perform common refinement for the specified cone and set of cones.
    vector<Cone> *HIndex;
-   HIndex = &HullCones[HullIndex];
+   HIndex = &Hulls[HullIndex].Cones;
    BitsetWithCount *RT = &NewCone.RelationTables[HullIndex];
    list<Cone> Result;
    Cone *ConeToTest;
@@ -22,7 +22,7 @@ list<Cone> DoCommonRefinement(
       ConeToTest = &(*HIndex)[i];
 
       bool SkipIntersection = false;
-      vector<BitsetWithCount> RelationTables(HullCones.size());
+      vector<BitsetWithCount> RelationTables(Hulls.size());
 
       for (size_t j = 0; j != NewCone.RelationTables.size(); j++)
       {
@@ -58,7 +58,7 @@ list<Cone> DoCommonRefinement(
 
 //------------------------------------------------------------------------------
 inline list<Cone> DynamicEnumerate(
-   Cone &C, vector<vector<Cone> > &HullCones)
+   Cone &C, vector<Hull> &Hulls)
 {
    // Figure out which polytope we want to visit next
    bool HaveCandidatePolytope = false;
@@ -82,12 +82,12 @@ inline list<Cone> DynamicEnumerate(
    C.PolytopesVisited.Indices[SmallestIndex] = 1;
    C.PolytopesVisited.Count++;
 
-   return DoCommonRefinement(SmallestIndex, C, HullCones);
+   return DoCommonRefinement(SmallestIndex, C, Hulls);
 };
 
 //------------------------------------------------------------------------------
 void ThreadEnum(
-   vector<vector<Cone> > HullCones,
+   vector<Hull> Hulls,
    int ProcessID,
    int ProcessCount,
    vector<ThreadQueue> &ThreadQueues,
@@ -158,7 +158,7 @@ void ThreadEnum(
          };
          j++;
       };
-      list<Cone> ResultCones = DynamicEnumerate(C, HullCones);
+      list<Cone> ResultCones = DynamicEnumerate(C, Hulls);
 
       // If there are remaining new cones, give them to the job queue.
       if (ResultCones.size() > 0)
@@ -166,7 +166,7 @@ void ThreadEnum(
          int Index = ResultCones.front().PolytopesVisited.Count;
          
          // The cones have visited all of the polytopes.
-         if (Index == HullCones.size())
+         if (Index == Hulls.size())
          {
             list<Cone>::iterator i;
             for (i = ResultCones.begin(); i != ResultCones.end(); i++)
@@ -302,41 +302,41 @@ int main(int argc, char* argv[])
                               + to_string(ProcessCount);
       throw invalid_argument(ThreadErrorMsg);
    };
-   vector<vector<Cone> > HullCones;
+   vector<Hull> Hulls;
    vector<double> VectorForOrientation;
    for (size_t i = 0; i != PolynomialSystemSupport[0][0].size(); i++)
       VectorForOrientation.push_back(rand());
    for (size_t i = 0; i != PolynomialSystemSupport.size(); i++)
-      HullCones.push_back(
+      Hulls.push_back(
          NewHull(PolynomialSystemSupport[i], VectorForOrientation, Verbose));
 
    // Initialize each cone's PolytopesVisited object
-   for(int i = 0; i != HullCones.size(); i++)
+   for(int i = 0; i != Hulls.size(); i++)
    {
-      for (size_t j = 0; j != HullCones[i].size(); j++)
+      for (size_t j = 0; j != Hulls[i].Cones.size(); j++)
       {
-         HullCones[i][j].PolytopesVisited.Indices.resize(HullCones.size());
-         HullCones[i][j].PolytopesVisited.Indices[i] = 1;
-         HullCones[i][j].PolytopesVisited.Count = 1;
+         Hulls[i].Cones[j].PolytopesVisited.Indices.resize(Hulls.size());
+         Hulls[i].Cones[j].PolytopesVisited.Indices[i] = 1;
+         Hulls[i].Cones[j].PolytopesVisited.Count = 1;
       };
    };
 
    // Correctly size relation tables
    vector<vector<vector<BitsetWithCount> > > RTs;
-   for(size_t i = 0; i != HullCones.size(); i++)
+   for(size_t i = 0; i != Hulls.size(); i++)
    {
       vector<vector<BitsetWithCount> > RTs1;
-      for(size_t j = 0; j != HullCones[i].size(); j++)
+      for(size_t j = 0; j != Hulls[i].Cones.size(); j++)
       {
          vector<BitsetWithCount> RTs2;
-         for(size_t k = 0; k != HullCones.size(); k++)
+         for(size_t k = 0; k != Hulls.size(); k++)
          {
             BitsetWithCount RT;
-            RT.Indices.resize(HullCones[k].size());
+            RT.Indices.resize(Hulls[k].Cones.size());
             RT.Count = 0;
-            HullCones[i][j].RelationTables.push_back(RT);
+            Hulls[i].Cones[j].RelationTables.push_back(RT);
             BitsetWithCount RT2;
-            RT2.Indices.resize(HullCones[k].size());
+            RT2.Indices.resize(Hulls[k].Cones.size());
             RT2.Count = 0;
             RTs2.push_back(RT2);
          };
@@ -348,7 +348,7 @@ int main(int argc, char* argv[])
    
    struct timeval PreIntStartTime, PreIntEndTime;
    gettimeofday(&PreIntStartTime, NULL);
-   int TotalInt = MarkRelationTables(HullCones, RTs, ProcessCount);
+   int TotalInt = MarkRelationTables(Hulls, RTs, ProcessCount);
    gettimeofday(&PreIntEndTime, NULL);
    double PreintersectTime = ((PreIntEndTime.tv_sec  - PreIntStartTime.tv_sec) * 1000000u + 
          PreIntEndTime.tv_usec - PreIntStartTime.tv_usec) / 1.e6;
@@ -356,19 +356,19 @@ int main(int argc, char* argv[])
    // Pick which polytope to start with. Initialize to the first polytope
    int SmallestInt = 0;
    int SmallestIndex = 0;
-   for (size_t i = 0; i != HullCones[0].size(); i++)
+   for (size_t i = 0; i != Hulls[0].Cones.size(); i++)
    {
-      for (size_t j = 0; j != HullCones[0][i].RelationTables.size(); j++)
-         SmallestInt += HullCones[0][i].RelationTables[j].Count;
+      for (size_t j = 0; j != Hulls[0].Cones[i].RelationTables.size(); j++)
+         SmallestInt += Hulls[0].Cones[i].RelationTables[j].Count;
    };
    // Then try all possible polytopes
-   for (size_t i = 1; i != HullCones.size(); i++)
+   for (size_t i = 1; i != Hulls.size(); i++)
    {
       int TestValue = 0;
-      for (size_t j = 0; j != HullCones[i].size(); j++)
+      for (size_t j = 0; j != Hulls[i].Cones.size(); j++)
       {
-         for (size_t k = 0; k != HullCones[i][j].RelationTables.size(); k++)
-            TestValue += HullCones[i][j].RelationTables[k].Count;
+         for (size_t k = 0; k != Hulls[i].Cones[j].RelationTables.size(); k++)
+            TestValue += Hulls[i].Cones[j].RelationTables[k].Count;
       };
       if (TestValue < SmallestInt)
       {
@@ -381,7 +381,7 @@ int main(int argc, char* argv[])
    for (size_t i = 0; i != ProcessCount; i++)
    {
       vector<list<Cone> > SharedCones;
-      for (size_t j = 0; j != HullCones.size() - 1; j++)
+      for (size_t j = 0; j != Hulls.size() - 1; j++)
       {
          list<Cone> Temp;
          SharedCones.push_back(Temp);
@@ -390,9 +390,9 @@ int main(int argc, char* argv[])
       ThreadQueues.push_back(TQ);
    };
    
-   for (size_t i = 0; i != HullCones[SmallestIndex].size(); i++)
+   for (size_t i = 0; i != Hulls[SmallestIndex].Cones.size(); i++)
       ThreadQueues[i % ProcessCount].SharedCones[0].push_back(
-         HullCones[SmallestIndex][i]);
+         Hulls[SmallestIndex].Cones[i]);
    
    mutex BPMtx;
    mutex OutputMtx;
@@ -405,7 +405,7 @@ int main(int argc, char* argv[])
       {
          thread_pool.submit(make_threadable(bind(
             ThreadEnum,
-            HullCones,
+            Hulls,
             i,
             ProcessCount,
             ref(ThreadQueues),

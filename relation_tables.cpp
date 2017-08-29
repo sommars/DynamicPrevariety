@@ -2,15 +2,15 @@
 int RTIntersectionCount;
 
 //------------------------------------------------------------------------------
-void DoMarkRelationTables(vector<vector<Cone> > &HullCones, vector<vector<vector<BitsetWithCount> > > &RTs, mutex &Mtx, int ID)
+void DoMarkRelationTables(vector<Hull> &Hulls, vector<vector<vector<BitsetWithCount> > > &RTs, mutex &Mtx, int ID)
 {
-   for(int i = 0; i != HullCones.size(); i++)
+   for(int i = 0; i != Hulls.size(); i++)
    {
-      for(size_t j = i+1; j != HullCones.size(); j++)
+      for(size_t j = i+1; j != Hulls.size(); j++)
       {
-         for(size_t k = 0; k != HullCones[i].size(); k++)
+         for(size_t k = 0; k != Hulls[i].Cones.size(); k++)
          {
-            for(size_t l = 0; l != HullCones[j].size(); l++)
+            for(size_t l = 0; l != Hulls[j].Cones.size(); l++)
             {
                if (RTs[i][k][j].Indices[l] == 0)
                {
@@ -25,14 +25,14 @@ void DoMarkRelationTables(vector<vector<Cone> > &HullCones, vector<vector<vector
                   RTs[j][l][i].Indices[k] = 1;
                   RTIntersectionCount++;
                   Mtx.unlock();
-                  if (!HullCones[i][k].HOPolyhedron.is_disjoint_from(
-                      HullCones[j][l].HOPolyhedron))
+                  if (!Hulls[i].Cones[k].HOPolyhedron.is_disjoint_from(
+                      Hulls[j].Cones[l].HOPolyhedron))
                   {
                      Mtx.lock();
-                     HullCones[i][k].RelationTables[j].Indices[l] = 1;
-                     HullCones[j][l].RelationTables[i].Indices[k] = 1;
-                     HullCones[i][k].RelationTables[j].Count++;
-                     HullCones[j][l].RelationTables[i].Count++;
+                     Hulls[i].Cones[k].RelationTables[j].Indices[l] = 1;
+                     Hulls[j].Cones[l].RelationTables[i].Indices[k] = 1;
+                     Hulls[i].Cones[k].RelationTables[j].Count++;
+                     Hulls[j].Cones[l].RelationTables[i].Count++;
                      Mtx.unlock();
                   };
                };
@@ -44,7 +44,7 @@ void DoMarkRelationTables(vector<vector<Cone> > &HullCones, vector<vector<vector
 };
 
 //------------------------------------------------------------------------------
-int MarkRelationTables(vector<vector<Cone> > &HullCones, vector<vector<vector<BitsetWithCount> > > &RTs1, int ProcessCount)
+int MarkRelationTables(vector<Hull> &Hulls, vector<vector<vector<BitsetWithCount> > > &RTs1, int ProcessCount)
 {
    {
       Thread_Pool<function<void()>> thread_pool(ProcessCount);
@@ -53,7 +53,7 @@ int MarkRelationTables(vector<vector<Cone> > &HullCones, vector<vector<vector<Bi
       {
          thread_pool.submit(make_threadable(bind(
             DoMarkRelationTables,
-            ref(HullCones),
+            ref(Hulls),
             ref(RTs1),
             ref(Mtx),
             i)));

@@ -5,11 +5,9 @@ vector<Cone> FindHOHullCones(
 	Hull &H,
 	vector<double> &VectorForOrientation)
 {
-
-	Hull NewH = NewHull(H.Points,VectorForOrientation, false, false);
+	Hull NewH = NewHull(H.Points,VectorForOrientation, false);
 
 	vector<Cone> Result;
-	cout << H.Cones.size() << " " << NewH.Cones.size() << endl;
 	for (size_t i = 0; i != H.Cones.size(); i++)
 	{
 		bool FoundCone = false;
@@ -24,8 +22,10 @@ vector<Cone> FindHOHullCones(
 				break;
 			};
 		};
-		if (!FoundCone)
+		if (!FoundCone) {
 			cout << "AAAAAAAAAAAAAAAAAAAAA" << endl;
+			cin.get();
+		};
 	};
 
 	return Result;
@@ -35,24 +35,19 @@ vector<Cone> FindHOHullCones(
 Hull NewHull(
    vector<vector<int> > &Points,
    vector<double> &VectorForOrientation,
-   bool Verbose,
-   bool MakeConesClosed)
+   bool Verbose)
 {
    // For a given set of points and orientation vector, this function computes
    // the set of half open edge cones for the polytope defined by these points.
    Hull H;
    H.CPolyhedron = FindCPolyhedron(Points);
-   map<double,vector<int> > DoubleToPt;
-   vector<double> IPs;
+   vector<pair<double,vector<int> > > IPVectorPairs;
    for (size_t i = 0; i != Points.size(); i++)
-   {
-      double IP = DoubleInnerProduct(Points[i], VectorForOrientation);
-      IPs.push_back(IP);
-      DoubleToPt[IP] = Points[i];
-   };
-   sort(IPs.begin(), IPs.end());
-   for (size_t i = 0; i != IPs.size(); i++)
-      H.Points.push_back(DoubleToPt[IPs[i]]);
+      IPVectorPairs.push_back(pair<double,vector<int> >(DoubleInnerProduct(Points[i], VectorForOrientation),Points[i]));
+   sort(IPVectorPairs.begin(), IPVectorPairs.end());
+   
+   for (size_t i = 0; i != IPVectorPairs.size(); i++)
+      H.Points.push_back(IPVectorPairs[i].second);
 
    H.AffineDimension = H.CPolyhedron.affine_dimension();
    H.SpaceDimension = H.CPolyhedron.space_dimension();
@@ -101,8 +96,6 @@ Hull NewHull(
             else
                c = (LE > 0);
                
-  					 if (MakeConesClosed)
-               c = (LE >= 0);
             Constraints.push_back(c);
          };
       };
@@ -138,18 +131,10 @@ Hull NewHull(
             };
             
 	          Cone NewCone;
-            if (MakeConesClosed)
-            {
-		          NewCone.ClosedPolyhedron = NNC_Polyhedron(csOriginalDim);
-		          NewCone.ClosedPolyhedron.minimized_constraints();
-		          NewCone.ClosedPolyhedron.minimized_generators();
-		          NewCone.ClosedPolyhedron.affine_dimension();
-						} else {
-		          NewCone.HOPolyhedron = NNC_Polyhedron(csOriginalDim);
-		          NewCone.HOPolyhedron.minimized_constraints();
-		          NewCone.HOPolyhedron.minimized_generators();
-		          NewCone.HOPolyhedron.affine_dimension();
-						}
+	          NewCone.HOPolyhedron = NNC_Polyhedron(csOriginalDim);
+	          NewCone.HOPolyhedron.minimized_constraints();
+	          NewCone.HOPolyhedron.minimized_generators();
+	          NewCone.HOPolyhedron.affine_dimension();
             H.Cones.push_back(NewCone);
             //Introduce it as a strict inequality to describe the rest.
             // Call recursively.
@@ -157,6 +142,29 @@ Hull NewHull(
          };
       };
    };
+   
+    for (size_t i = 0; i != H.Cones.size(); i++)
+    {
+    	Constraint_System NewCS;
+			for (Constraint_System::const_iterator c = 
+						 H.Cones[i].HOPolyhedron.constraints().begin(),
+						 gs_end = H.Cones[i].HOPolyhedron.constraints().end();
+				 c != gs_end;
+				 ++c)
+    	{
+	    	if ((*c).is_strict_inequality())
+	    	{
+	    		Constraint ccc = *c;
+	    		Constraint cc = StrictInequalityToInequality(ccc);
+	    		NewCS.insert(cc);
+	    	} else
+	    		NewCS.insert(*c);
+    	}
+    	H.Cones[i].ClosedPolyhedron = NNC_Polyhedron(NewCS);
+			H.Cones[i].ClosedPolyhedron.minimized_constraints();
+			H.Cones[i].ClosedPolyhedron.minimized_generators();
+			H.Cones[i].ClosedPolyhedron.affine_dimension();
+    };
 
    if (Verbose)
    {

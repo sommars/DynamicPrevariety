@@ -1,5 +1,7 @@
 #include "relation_tables.h"
 int RTIntersectionCount;
+int ZeroCount;
+int NonZeroCount;
 
 //------------------------------------------------------------------------------
 void DoMarkRelationTables(vector<Hull> &Hulls, vector<vector<vector<BitsetWithCount> > > &RTs, mutex &Mtx, int ID)
@@ -27,22 +29,25 @@ void DoMarkRelationTables(vector<Hull> &Hulls, vector<vector<vector<BitsetWithCo
                   Mtx.unlock();
                   
                   Cone TestCone = Hulls[i].Cones[k];
-						      TestCone.ClosedPolyhedron.add_constraints(Hulls[j].Cones[l].ClosedPolyhedron.constraints());
+						      TestCone.HOPolyhedron.add_constraints(Hulls[j].Cones[l].ClosedPolyhedron.constraints());
 
-                  if (TestCone.ClosedPolyhedron.affine_dimension() > 0)
+                  if (TestCone.HOPolyhedron.affine_dimension() > 0)
                   {
                      Mtx.lock();
                      Hulls[i].Cones[k].RelationTables[j].Indices[l] = 1;
                      Hulls[j].Cones[l].RelationTables[i].Indices[k] = 1;
                      Hulls[i].Cones[k].RelationTables[j].Count++;
                      Hulls[j].Cones[l].RelationTables[i].Count++;
+                     NonZeroCount++;
                      Mtx.unlock();
-                  };
+                  } else ZeroCount++;
                };
             };
          };
       };
    };
+   cout << "Zero count " << ZeroCount << endl;
+   cout << "NonZero count " << NonZeroCount << endl;
    return;
 };
 

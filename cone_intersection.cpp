@@ -9,7 +9,6 @@ list<Cone> DoCommonRefinement(
    vector<Hull> &Hulls)
 {
 
-cout << "A" << endl;
    // Perform common refinement for the specified cone and set of cones.
    vector<Cone> *HIndex;
    HIndex = &Hulls[HullIndex].Cones;
@@ -75,14 +74,12 @@ cout << "A" << endl;
 				s << (*i).coefficient(Variable(j));
 				int ToAppend;
 				istringstream(s.str()) >> ToAppend;
-				RandomVector[j] += ToAppend;
+				RandomVector[j] += ToAppend * 1.01;
 			};
 		};
 
-cout << "B" << endl;
    vector<Cone> NewCones = FindHOHullCones(Hulls[HullIndex], RandomVector);
 
-cout << "C" << endl;
    list<Cone> Result;
    for (boost::dynamic_bitset<>::size_type i = 0; i != RT->Indices.size(); i++)
    {
@@ -92,7 +89,6 @@ cout << "C" << endl;
       bool SkipIntersection = false;
       vector<BitsetWithCount> RelationTables(Hulls.size());
 
-cout << "C" << endl;
       for (size_t j = 0; j != NewCone.RelationTables.size(); j++)
       {
          if (!NewCone.PolytopesVisited.Indices[j])
@@ -107,7 +103,6 @@ cout << "C" << endl;
          };
       };
 
-cout << "DD" << endl;      
       if (SkipIntersection)
          continue;
          
@@ -115,7 +110,6 @@ cout << "DD" << endl;
       TestCone.HOPolyhedron.add_constraints(
          NewCones[i].HOPolyhedron.constraints());
          
-cout << "C" << endl;
       if (TestCone.HOPolyhedron.affine_dimension() == 0)
          continue;
          
@@ -124,8 +118,6 @@ cout << "C" << endl;
       Result.push_back(TestCone);
    };
 
-cout << "D" << endl;
-   
    return Result;
 }
 
@@ -337,7 +329,7 @@ int main(int argc, char* argv[])
    bool Verbose = true;
 
    double RandomSeed = time(NULL);
-   RandomSeed = 0;
+   //RandomSeed = 0;
    srand(RandomSeed);
    
    int ProcessCount;
@@ -382,7 +374,7 @@ int main(int argc, char* argv[])
       VectorForOrientation.push_back(rand());
    for (size_t i = 0; i != PolynomialSystemSupport.size(); i++)
       Hulls.push_back(
-         NewHull(PolynomialSystemSupport[i], VectorForOrientation, Verbose, true));
+         NewHull(PolynomialSystemSupport[i], VectorForOrientation, Verbose));
 
    // Initialize each cone's PolytopesVisited object
    for(int i = 0; i != Hulls.size(); i++)

@@ -31,6 +31,17 @@ Constraint InequalityToStrictInequality(Constraint &c)
 }
 
 //------------------------------------------------------------------------------
+Constraint StrictInequalityToInequality(Constraint c)
+{
+   // Converts a PPL strict inequality to an inequality
+   Linear_Expression LE;
+   for (size_t i = 0; i < c.space_dimension(); i++)
+      LE += c.coefficient(Variable(i)) * Variable(i);
+   Constraint c2(LE >= c.inhomogeneous_term());
+   return c2;
+}
+
+//------------------------------------------------------------------------------
 Constraint InequalityToEquation(Constraint &c)
 {
    // Converts a PPL inequality to an equation

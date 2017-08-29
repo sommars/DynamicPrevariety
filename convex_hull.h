@@ -13,8 +13,7 @@ vector<Cone> FindHOHullCones(
 Hull NewHull(
    vector<vector<int> > &Points,
    vector<double> &VectorForOrientation,
-   bool Verbose,
-   bool MakeConesClosed);
+   bool Verbose);
 
 //------------------------------------------------------------------------------
 void FindFacets(Hull &H);

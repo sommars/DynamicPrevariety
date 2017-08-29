@@ -81,7 +81,7 @@ Hull NewHull(
                c = (LE > 0);
                
 
-//             c = (LE > 0);
+             c = (LE >= 0);
             Constraints.push_back(c);
          };
       };
@@ -117,10 +117,10 @@ Hull NewHull(
             };
             
             Cone NewCone;
-            NewCone.HOPolyhedron = NNC_Polyhedron(csOriginalDim);
-            NewCone.HOPolyhedron.minimized_constraints();
-            NewCone.HOPolyhedron.minimized_generators();
-            NewCone.HOPolyhedron.affine_dimension();
+            NewCone.ClosedPolyhedron = NNC_Polyhedron(csOriginalDim);
+            NewCone.ClosedPolyhedron.minimized_constraints();
+            NewCone.ClosedPolyhedron.minimized_generators();
+            NewCone.ClosedPolyhedron.affine_dimension();
 
             H.Cones.push_back(NewCone);
             //Introduce it as a strict inequality to describe the rest.

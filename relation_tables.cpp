@@ -25,8 +25,11 @@ void DoMarkRelationTables(vector<Hull> &Hulls, vector<vector<vector<BitsetWithCo
                   RTs[j][l][i].Indices[k] = 1;
                   RTIntersectionCount++;
                   Mtx.unlock();
-                  if (!Hulls[i].Cones[k].HOPolyhedron.is_disjoint_from(
-                      Hulls[j].Cones[l].HOPolyhedron))
+                  
+                  Cone TestCone = Hulls[i].Cones[k];
+						      TestCone.ClosedPolyhedron.add_constraints(Hulls[j].Cones[l].ClosedPolyhedron.constraints());
+
+                  if (TestCone.ClosedPolyhedron.affine_dimension() > 0)
                   {
                      Mtx.lock();
                      Hulls[i].Cones[k].RelationTables[j].Indices[l] = 1;

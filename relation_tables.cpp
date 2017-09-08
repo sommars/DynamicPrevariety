@@ -29,7 +29,7 @@ void DoMarkRelationTables(vector<Hull> &Hulls, vector<vector<vector<BitsetWithCo
                   Mtx.unlock();
                   
                   Cone TestCone = Hulls[i].Cones[k];
-						      TestCone.HOPolyhedron.add_constraints(Hulls[j].Cones[l].ClosedPolyhedron.constraints());
+						      TestCone.HOPolyhedron.add_constraints(Hulls[j].Cones[l].HOPolyhedron.constraints());
 
                   if (TestCone.HOPolyhedron.affine_dimension() > 0)
                   {

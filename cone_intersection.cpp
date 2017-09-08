@@ -1,13 +1,16 @@
 #include "relation_tables.h"
 
 int ConeIntersectionCount;
+int NodeCount;
+int LeafCount;
+int DupCount;
 
 //------------------------------------------------------------------------------
 list<Cone> DoCommonRefinement(
    int HullIndex,
    Cone &NewCone,
    vector<Hull> &Hulls)
-{
+{	NodeCount++;
 
    // Perform common refinement for the specified cone and set of cones.
    vector<Cone> *HIndex;
@@ -17,8 +20,6 @@ list<Cone> DoCommonRefinement(
    Cone *ConeToTest;
    for (boost::dynamic_bitset<>::size_type i = 0; i != RT->Indices.size(); i++)
    {
-      if (!RT->Indices[i])
-         continue;
       ConeToTest = &(*HIndex)[i];
 
       bool SkipIntersection = false;
@@ -32,8 +33,6 @@ list<Cone> DoCommonRefinement(
                ConeToTest->RelationTables[j], NewCone.RelationTables[j]);
             if (RelationTables[j].Count == 0)
             {
-               SkipIntersection = true;
-               break;
             };
          };
       };
@@ -58,12 +57,19 @@ list<Cone> DoCommonRefinement(
    Cone MaxCone = *TemporaryResult.begin();
    
    list<Cone>::iterator itr;
+   bool FoundDup = false;
    for (itr = TemporaryResult.begin(); itr != TemporaryResult.end(); itr++)
    {
+      if (itr->HOPolyhedron.affine_dimension() == MaxCone.HOPolyhedron.affine_dimension() && itr != TemporaryResult.begin() && MaxCone.HOPolyhedron.affine_dimension() == NewCone.HOPolyhedron.affine_dimension())
+      	{FoundDup = true;}
       if (itr->HOPolyhedron.affine_dimension() > MaxCone.HOPolyhedron.affine_dimension())
-      	MaxCone = *itr;
+      	{MaxCone = *itr;
+      	FoundDup = false;
+      	};
    };
+   if (FoundDup)
    
+	   DupCount++;
    // Find ray inside cone of largest dimension 
  		vector<double> RandomVector(MaxCone.HOPolyhedron.space_dimension(), 0);
 		Generator_System gs = MaxCone.HOPolyhedron.minimized_generators();
@@ -74,7 +80,7 @@ list<Cone> DoCommonRefinement(
 				s << (*i).coefficient(Variable(j));
 				int ToAppend;
 				istringstream(s.str()) >> ToAppend;
-				RandomVector[j] += ToAppend * 1.01;
+				RandomVector[j] += ToAppend * pow(1.01,j);
 			};
 		};
 
@@ -83,8 +89,6 @@ list<Cone> DoCommonRefinement(
    list<Cone> Result;
    for (boost::dynamic_bitset<>::size_type i = 0; i != RT->Indices.size(); i++)
    {
-      if (!RT->Indices[i])
-         continue;
 
       bool SkipIntersection = false;
       vector<BitsetWithCount> RelationTables(Hulls.size());
@@ -95,16 +99,16 @@ list<Cone> DoCommonRefinement(
          {
             RelationTables[j] = IntersectRTs(
                NewCones[i].RelationTables[j], NewCone.RelationTables[j]);
-            if (RelationTables[j].Count == 0)
-            {
-               SkipIntersection = true;
-               break;
-            };
+      //      if (RelationTables[j].Count == 0)
+      //      {
+      //         SkipIntersection = true;
+      //         break;
+      //      };
          };
       };
 
-      if (SkipIntersection)
-         continue;
+      //if (SkipIntersection)
+      //   continue;
          
       Cone TestCone = NewCone;
       TestCone.HOPolyhedron.add_constraints(
@@ -233,6 +237,7 @@ void ThreadEnum(
          // The cones have visited all of the polytopes.
          if (Index == Hulls.size())
          {
+         	LeafCount++;
             list<Cone>::iterator i;
             for (i = ResultCones.begin(); i != ResultCones.end(); i++)
             {
@@ -456,7 +461,7 @@ int main(int argc, char* argv[])
       ThreadQueues.push_back(TQ);
    };
    
-   vector<Cone> StartingHOCones = FindHOHullCones(Hulls[SmallestIndex], VectorForOrientation);
+   vector<Cone> StartingHOCones = Hulls[SmallestIndex].Cones;
    
    for (size_t i = 0; i != Hulls[SmallestIndex].Cones.size(); i++)
       ThreadQueues[i % ProcessCount].SharedCones[0].push_back(StartingHOCones[i]);
@@ -504,10 +509,13 @@ int main(int argc, char* argv[])
    s << "Alg intersections: " << ConeIntersectionCount << endl;
    s << "Total intersections: "
      << TotalInt + ConeIntersectionCount << endl;
+   s << "Node count: " << NodeCount << endl;
+   s << "Leaf count: " << LeafCount << endl;
    s << "Preintersection time: " << PreintersectTime << endl;
    s << "Marking time: " << MarkingTime << endl;
    s << "Pretropisms: " << Output.RayToIndexMap.size() << endl;
    s << "Total Alg time: " << TotalAlgTime << endl;
+   s << "DupCount: " << DupCount << endl;
    s << fixed << "Random Seed: " << RandomSeed << endl;
    
    ofstream OutFile ("output.txt");

@@ -47,8 +47,13 @@ Hull NewHull(
    sort(IPVectorPairs.begin(), IPVectorPairs.end());
    
    for (size_t i = 0; i != IPVectorPairs.size(); i++)
+   {
       H.Points.push_back(IPVectorPairs[i].second);
-
+			cout << IPVectorPairs[i].first  << endl;
+			PrintPoint(IPVectorPairs[i].second);
+			cout << endl;
+	 };
+	 cout << endl;
    H.AffineDimension = H.CPolyhedron.affine_dimension();
    H.SpaceDimension = H.CPolyhedron.space_dimension();
       

@@ -4,7 +4,8 @@
 vector<Cone> NewHull(
    vector<vector<int> > &Points,
    vector<double> &VectorForOrientation, 
-   bool Verbose)
+   bool Verbose,
+   bool FindLowerHullOnly)
 {
    // For a given set of points and orientation vector, this function computes
    // the set of half open edge cones for the polytope defined by these points.
@@ -35,6 +36,13 @@ vector<Cone> NewHull(
 
    FindFacets(H);
    FindEdges(H);
+   
+   Linear_Expression LowerHullLE;
+   LowerHullLE += Variable(0) * -1;
+   for (size_t i = 1; i != H.SpaceDimension; i++)
+      LowerHullLE += Variable(i) * 0;
+   Constraint LowerHullConstraint = LowerHullLE > 0;
+   
    for (size_t i = 0; i != H.Points.size(); i++)
    {
       vector<Constraint> Constraints;
@@ -85,30 +93,40 @@ vector<Cone> NewHull(
 
             // Now we raise to a higher dimension to represent as a standard
             // linear programming problem.
-            Constraint_System csHigherDim;
+            //Constraint_System csHigherDim;
             Constraint_System csOriginalDim;
-            csHigherDim.insert(Constraint(Variable(H.SpaceDimension) >= 1));
+            //csHigherDim.insert(Constraint(Variable(H.SpaceDimension) >= 1));
             for (size_t k = 0; k != Constraints.size(); k++)
             {
                csOriginalDim.insert(Constraints[k]);
-               if (Constraints[k].is_strict_inequality())
-               {
-                  Linear_Expression LE;
-                  for (size_t l = 0; l < Constraints[k].space_dimension(); l++)
-                     LE += Constraints[k].coefficient(Variable(l))*Variable(l);
-                  LE += -1 * Variable(Constraints[k].space_dimension());
-                  csHigherDim.insert(Constraint(LE >= 0));
-               } else
-                  csHigherDim.insert(Constraints[k]);
+              // if (Constraints[k].is_strict_inequality())
+              // {
+              //    Linear_Expression LE;
+              //    for (size_t l = 0; l < Constraints[k].space_dimension(); l++)
+              //       LE += Constraints[k].coefficient(Variable(l))*Variable(l);
+              //    LE += -1 * Variable(Constraints[k].space_dimension());
+              //    csHigherDim.insert(Constraint(LE >= 0));
+              // } else
+              //    csHigherDim.insert(Constraints[k]);
             };
             
+            if (FindLowerHullOnly)
+               csOriginalDim.insert(LowerHullConstraint);
+
             Cone NewCone;
             //NewCone.HOPolyhedron = C_Polyhedron(csHigherDim);
             NewCone.HOPolyhedron = NNC_Polyhedron(csOriginalDim);
             NewCone.HOPolyhedron.minimized_constraints();
             NewCone.HOPolyhedron.minimized_generators();
             NewCone.HOPolyhedron.affine_dimension();
-            H.Cones.push_back(NewCone);
+            
+            // If we are only finding the lower hull, it's very likely that
+            // some of the cones will be zero dimensional. Exclude them.
+            if (FindLowerHullOnly && (NewCone.HOPolyhedron.affine_dimension() == 0))
+            { // Do nothing
+            } else
+               H.Cones.push_back(NewCone);
+
             //Introduce it as a strict inequality to describe the rest.
             // Call recursively.
             Constraints[j] = InequalityToStrictInequality(TempConstraint);

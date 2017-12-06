@@ -416,7 +416,7 @@ int main(int argc, char* argv[])
       VectorForOrientation.push_back(rand());
    for (size_t i = 0; i != PolynomialSystemSupport.size(); i++)
       HullCones.push_back(
-         NewHull(PolynomialSystemSupport[i], VectorForOrientation, Verbose));
+         NewHull(PolynomialSystemSupport[i], VectorForOrientation, Verbose, FindLowerHullOnly));
 
    // Initialize each cone's PolytopesVisited object
    for(int i = 0; i != HullCones.size(); i++)

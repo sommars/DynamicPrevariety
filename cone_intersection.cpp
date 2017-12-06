@@ -2,6 +2,9 @@
 
 
 int ConeIntersectionCount;
+bool FindLowerHullOnly = false;
+bool ExitOnFindDimension = false;
+int DimensionForExit = -1;
 
 //------------------------------------------------------------------------------
 list<Cone> DoCommonRefinement(
@@ -270,36 +273,114 @@ void ThreadEnum(
 };
 
 //------------------------------------------------------------------------------
+bool StrIsInt(char* arg)
+{
+   string s = string(arg);
+   string::const_iterator it = s.begin();
+   while (it != s.end() && std::isdigit(*it))
+      ++it;
+   return !s.empty() && it == s.end();
+};
+
+//------------------------------------------------------------------------------
+void PrintHelp()
+{
+   cout << "This program computes the tropical prevariety of a set of set of points." << endl << endl
+   << "Valid options include:" << endl
+   << "-t for setting the number of threads" << endl
+   << "-l for finding only the open lower hull" << endl
+   << "-d for returning the first cone of dimension > d of the tropical prevariety that is found" << endl
+   << "-v for verbose" << endl
+   << "An example call to the program is:" << endl
+   << "./prevariety examples/cyclic/cyclic8 -t 4 -l -d 0" << endl
+   << "which will use four threads to compute the lower tropical prevariety, and will exit as soon as it finds a cone of dimension > 0." << endl;
+
+};
+
+//------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
    struct timeval AlgStartTime, AlgEndTime;
    gettimeofday(&AlgStartTime, NULL);
-   bool Verbose = true;
+   bool Verbose = false;
 
    double RandomSeed = time(NULL);
    srand(RandomSeed);
    
-   int ProcessCount;
+   int ProcessCount = 1;
    vector<vector<vector<int> > > PolynomialSystemSupport;
    
-
-   if ((argc == 2) || (argc == 3))
+   if ((argc == 2) && (string(argv[1]) == "-help"))
+   {
+      PrintHelp();
+      return 0;
+   };
+   
+   if (argc >= 2)
    {
       string FileName;
       FileName = string(argv[1]);
       ifstream f(FileName.c_str());
       if (!f.good())
          throw invalid_argument("Please input a valid filename.");
-         
       PolynomialSystemSupport = ParseSupportFile(FileName);
-      if (argc == 3)
-         ProcessCount = atoi(argv[2]);
-      else
-         ProcessCount = 1;
-   } else
-     throw invalid_argument("Please input a filename and the number of threads "
-        "to be used.\n For example:\n ./prevariety ./examples/cyclic4 1.");
 
+      for (size_t i = 2; i < argc; )
+      {
+         string Option = string(argv[i]);
+         if (Option == "-d")
+         {
+            ExitOnFindDimension = true;
+            if (((i + 1) < argc) && StrIsInt(argv[i+1]))
+            {
+               DimensionForExit = atoi(argv[i+1]);
+            } else
+               throw invalid_argument("-d must be followed by a dimension.");
+
+            i++;
+            i++;
+         }
+         else if (Option == "-t")
+         {
+            if (((i + 1) < argc) && StrIsInt(argv[i+1]))
+            {
+               ProcessCount = atoi(argv[i+1]);
+            } else
+               throw invalid_argument("-t must be followed by a number of threads.");
+            i++;
+            i++;
+         }
+         else if (Option == "-l")
+         {
+            FindLowerHullOnly = true;
+            i++;
+         }
+         else if (Option == "-v")
+         {
+            Verbose = true;
+            i++;
+         }
+         else if (Option == "-help")
+         {
+            PrintHelp();
+            return 0;
+         }
+         else 
+            throw invalid_argument("Please input a filename and the number of threads "
+               "to be used.\n For example:\n ./prevariety ./examples/cyclic4 1.");
+   
+      };
+   } else
+     throw invalid_argument("Invalid configuration. Please run -help for instructions");
+
+   if (Verbose)
+   {
+      cout << "----Options----" << endl;
+      cout << "ProcessCount: " << ProcessCount << endl;
+      cout << "Find lower hull: " << FindLowerHullOnly << endl;
+      cout << "Exit on find dimension: " << ExitOnFindDimension << endl;
+   };
+   
    bool DoMixedVol = false;
    if (DoMixedVol)
    {

@@ -319,7 +319,6 @@ int main(int argc, char* argv[])
    bool Verbose = false;
 
    double RandomSeed = time(NULL);
-   srand(RandomSeed);
    
    int ProcessCount = 1;
    vector<vector<vector<int> > > PolynomialSystemSupport;
@@ -364,6 +363,16 @@ int main(int argc, char* argv[])
             i++;
             i++;
          }
+         else if (Option == "-s")
+         {
+            if (((i + 1) < argc) && StrIsInt(argv[i+1]))
+            {
+               RandomSeed = atoi(argv[i+1]);
+            } else
+               throw invalid_argument("-s must be followed by an integer random seed.");
+            i++;
+            i++;
+         }
          else if (Option == "-l")
          {
             FindLowerHullOnly = true;
@@ -393,8 +402,11 @@ int main(int argc, char* argv[])
       cout << "ProcessCount: " << ProcessCount << endl;
       cout << "Find lower hull: " << FindLowerHullOnly << endl;
       cout << "Exit on find dimension: " << ExitOnFindDimension << endl;
+      cout << "Seed: " << RandomSeed << endl;
    };
-   
+
+   srand(RandomSeed);
+      
    bool DoMixedVol = false;
    if (DoMixedVol)
    {

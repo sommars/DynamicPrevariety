@@ -90,9 +90,11 @@ struct ThreadQueue
    // queue, which facilitates work stealing.
    mutable mutex M;
    vector<list<Cone> > SharedCones;
+   bool ThreadShouldDie;
    ThreadQueue(vector<list<Cone> > ConeVector): SharedCones(ConeVector) {};
    ThreadQueue(const ThreadQueue& TQ) {
       lock_guard<mutex> lock(TQ.M);
+      ThreadShouldDie = false;
       SharedCones = TQ.SharedCones;
    };
 };

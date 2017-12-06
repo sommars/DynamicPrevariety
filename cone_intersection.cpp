@@ -174,6 +174,9 @@ void ThreadEnum(
          };
          j++;
       };
+      if (TQ->ThreadShouldDie)
+         return;
+
       list<Cone> ResultCones = DynamicEnumerate(C, HullCones);
 
       // If there are remaining new cones, give them to the job queue.
@@ -190,7 +193,9 @@ void ThreadEnum(
                int ConeDim = i->HOPolyhedron.affine_dimension();
                if (ConeDim == 0)
                   continue;
-               
+                  
+               if (TQ->ThreadShouldDie)
+                  return;
                ConeWithIndicator CWI;
                CWI.HOPolyhedron = i->HOPolyhedron;
                CWI.Status = 2;
@@ -251,6 +256,15 @@ void ThreadEnum(
                };
                Output.ConeTree[ConeDim - 1].push_back(CWI);
                OutputMtx.unlock();
+               
+               if (ExitOnFindDimension && (ConeDim > DimensionForExit))
+               {
+                  // spin through all of the threads and set ThreadShouldDie on each of them.
+                  for (size_t TQIndex = 0; TQIndex != ThreadQueues.size(); TQIndex++)
+                     ThreadQueues[TQIndex].ThreadShouldDie = true;
+                  return;
+               };
+
             };
             HasCone = false;
          } else {

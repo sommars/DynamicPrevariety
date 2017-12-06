@@ -5,12 +5,7 @@
 #include "prevariety_util.h"
 
 //------------------------------------------------------------------------------
-vector<Cone> FindHOHullCones(
-	Hull &H,
-	vector<double> &VectorForOrientation);
-
-//------------------------------------------------------------------------------
-Hull NewHull(
+vector<Cone> NewHull(
    vector<vector<int> > &Points,
    vector<double> &VectorForOrientation,
    bool Verbose);

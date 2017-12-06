@@ -25,7 +25,6 @@ struct Cone
    vector<BitsetWithCount> RelationTables;
    BitsetWithCount PolytopesVisited;
    NNC_Polyhedron HOPolyhedron;
-   NNC_Polyhedron ClosedPolyhedron;
    //LPRowSetReal Rows;
 };
 

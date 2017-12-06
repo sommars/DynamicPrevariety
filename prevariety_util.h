@@ -7,9 +7,6 @@ vector<int> GeneratorToPoint(Generator &g, bool KnockOffLastTerm);
 Constraint InequalityToStrictInequality(Constraint &c);
 
 //------------------------------------------------------------------------------
-Constraint StrictInequalityToInequality(Constraint c);
-
-//------------------------------------------------------------------------------
 Constraint InequalityToEquation(Constraint &c);
 
 //------------------------------------------------------------------------------

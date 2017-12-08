@@ -3,6 +3,7 @@
 
 int ConeIntersectionCount;
 bool OnlyFindLowerHull = false;
+bool OnlyFindUpperHull = false;
 bool ExitOnFindDimension = false;
 bool ExitedComputationEarly = false;
 bool OnlyFindHighestDimensionalCones = false;
@@ -306,6 +307,7 @@ void PrintHelp()
    << "Valid options include:" << endl
    << "-t for setting the number of threads" << endl
    << "-l for finding only the open lower hull" << endl
+   << "-u for finding only the open upper hull" << endl
    << "-d for returning the first cone of dimension > d of the tropical prevariety that is found" << endl
    << "-h will return only the highest dimensional cones, which may lead to a speedup" << endl
    << "-v for verbose" << endl
@@ -382,6 +384,11 @@ int main(int argc, char* argv[])
             OnlyFindLowerHull = true;
             i++;
          }
+         else if (Option == "-u")
+         {
+            OnlyFindUpperHull = true;
+            i++;
+         }
          else if (Option == "-v")
          {
             Verbose = true;
@@ -404,11 +411,15 @@ int main(int argc, char* argv[])
    } else
      throw invalid_argument("Invalid input. Please run -help for instructions");
 
+   if (OnlyFindLowerHull && OnlyFindUpperHull)
+     throw invalid_argument("Cannot find only upper hull and only lower hull.");
+   
    if (Verbose)
    {
       cout << "----Options----" << endl
       << "ProcessCount: " << ProcessCount << endl
       << "Find lower hull: " << OnlyFindLowerHull << endl
+      << "Find upper hull: " << OnlyFindUpperHull << endl
       << "Exit on find dimension: " << ExitOnFindDimension << endl
       << "Only find highest dimensional cones: " << OnlyFindHighestDimensionalCones << endl
       << "Seed: " << RandomSeed << endl;
@@ -437,7 +448,7 @@ int main(int argc, char* argv[])
       VectorForOrientation.push_back(rand());
    for (size_t i = 0; i != PolynomialSystemSupport.size(); i++)
       HullCones.push_back(
-         NewHull(PolynomialSystemSupport[i], VectorForOrientation, Verbose, OnlyFindLowerHull));
+         NewHull(PolynomialSystemSupport[i], VectorForOrientation, Verbose, OnlyFindLowerHull, OnlyFindUpperHull));
 
    // Initialize each cone's PolytopesVisited object
    for(int i = 0; i != HullCones.size(); i++)

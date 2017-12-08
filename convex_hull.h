@@ -9,7 +9,8 @@ vector<Cone> NewHull(
    vector<vector<int> > &Points,
    vector<double> &VectorForOrientation,
    bool Verbose,
-   bool FindLowerHullOnly);
+   bool FindLowerHullOnly,
+   bool FindUpperHullOnly);
 
 //------------------------------------------------------------------------------
 void FindFacets(Hull &H);

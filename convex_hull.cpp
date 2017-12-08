@@ -5,7 +5,8 @@ vector<Cone> NewHull(
    vector<vector<int> > &Points,
    vector<double> &VectorForOrientation, 
    bool Verbose,
-   bool FindLowerHullOnly)
+   bool FindLowerHullOnly,
+   bool FindUpperHullOnly)
 {
    // For a given set of points and orientation vector, this function computes
    // the set of half open edge cones for the polytope defined by these points.
@@ -38,10 +39,16 @@ vector<Cone> NewHull(
    FindEdges(H);
    
    Linear_Expression LowerHullLE;
-   LowerHullLE += Variable(0) * 1;
+   LowerHullLE += Variable(0) * -1;
+   Linear_Expression UpperHullLE;
+   UpperHullLE += Variable(0) * 1;
    for (size_t i = 1; i != H.SpaceDimension; i++)
+   {
       LowerHullLE += Variable(i) * 0;
+      UpperHullLE += Variable(i) * 0;
+   };
    Constraint LowerHullConstraint = LowerHullLE > 0;
+   Constraint UpperHullConstraint = UpperHullLE > 0;
    
    for (size_t i = 0; i != H.Points.size(); i++)
    {
@@ -112,7 +119,9 @@ vector<Cone> NewHull(
             
             if (FindLowerHullOnly)
                csOriginalDim.insert(LowerHullConstraint);
-
+            if (FindUpperHullOnly)
+               csOriginalDim.insert(UpperHullConstraint);
+               
             Cone NewCone;
             //NewCone.HOPolyhedron = C_Polyhedron(csHigherDim);
             NewCone.HOPolyhedron = NNC_Polyhedron(csOriginalDim);
@@ -122,7 +131,7 @@ vector<Cone> NewHull(
             
             // If we are only finding the lower hull, it's very likely that
             // some of the cones will be zero dimensional. Exclude them.
-            if (FindLowerHullOnly && (NewCone.HOPolyhedron.affine_dimension() == 0))
+            if ((FindLowerHullOnly || FindUpperHullOnly) && (NewCone.HOPolyhedron.affine_dimension() == 0))
             { // Do nothing
             } else
                H.Cones.push_back(NewCone);

@@ -1,5 +1,5 @@
 #PPLPATH= /home/sommars1/ppl-061039a/src/
-ALLOC = libtcmalloc_minimal.so.4.2.6
+#ALLOC = libtcmalloc_minimal.so.4.2.6
 
 CC = g++
 CFLAGS = -O3 -std=c++11

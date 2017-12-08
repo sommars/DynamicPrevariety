@@ -4,6 +4,7 @@
 int ConeIntersectionCount;
 bool OnlyFindLowerHull = false;
 bool ExitOnFindDimension = false;
+bool ExitedComputationEarly = false;
 bool OnlyFindHighestDimensionalCones = false;
 int DimensionForExit = -1;
 
@@ -263,6 +264,7 @@ void ThreadEnum(
                   // spin through all of the threads and set ThreadShouldDie on each of them.
                   for (size_t TQIndex = 0; TQIndex != ThreadQueues.size(); TQIndex++)
                      ThreadQueues[TQIndex].ThreadShouldDie = true;
+                  ExitedComputationEarly = true;
                   return;
                };
 
@@ -569,20 +571,20 @@ int main(int argc, char* argv[])
    clock_t PrintingTimeStart = clock();
    StreamRayToIndexMap(Output, s);
    PrintMaximalCones(Output, s);
-  
+   
    gettimeofday(&AlgEndTime, NULL);
    double TotalAlgTime = ((AlgEndTime.tv_sec  - AlgStartTime.tv_sec) * 1000000u + 
          AlgEndTime.tv_usec - AlgStartTime.tv_usec) / 1.e6;
-   s << "------ Run data ------" << endl;
-   s << "Intersections for building RT: " << TotalInt << endl;
-   s << "Alg intersections: " << ConeIntersectionCount << endl;
-   s << "Total intersections: "
-     << TotalInt + ConeIntersectionCount << endl;
-   s << "Preintersection time: " << PreintersectTime << endl;
-   s << "Marking time: " << MarkingTime << endl;
-   s << "Pretropisms: " << Output.RayToIndexMap.size() << endl;
-   s << "Total Alg time: " << TotalAlgTime << endl;
-   s << fixed << "Random Seed: " << RandomSeed << endl;
+   s << "------ Run data ------" << endl
+   << "Intersections for building RT: " << TotalInt << endl
+   << "Alg intersections: " << ConeIntersectionCount << endl
+   << "Total intersections: " << TotalInt + ConeIntersectionCount << endl
+   << "Preintersection time: " << PreintersectTime << endl
+   << "Marking time: " << MarkingTime << endl
+   << "Pretropisms: " << Output.RayToIndexMap.size() << endl
+   << "Total Alg time: " << TotalAlgTime << endl
+   << "Exited computation early: " << boolalpha << ExitedComputationEarly << endl
+   << fixed << "Random Seed: " << RandomSeed << endl;
    
    ofstream OutFile ("output.txt");
    OutFile << s.str();

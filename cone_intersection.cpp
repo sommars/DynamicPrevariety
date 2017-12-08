@@ -2,8 +2,9 @@
 
 
 int ConeIntersectionCount;
-bool FindLowerHullOnly = false;
+bool OnlyFindLowerHull = false;
 bool ExitOnFindDimension = false;
+bool OnlyFindHighestDimensionalCones = false;
 int DimensionForExit = -1;
 
 //------------------------------------------------------------------------------
@@ -304,6 +305,7 @@ void PrintHelp()
    << "-t for setting the number of threads" << endl
    << "-l for finding only the open lower hull" << endl
    << "-d for returning the first cone of dimension > d of the tropical prevariety that is found" << endl
+   << "-h will return only the highest dimensional cones, which may lead to a speedup" << endl
    << "-v for verbose" << endl
    << "An example call to the program is:" << endl
    << "./prevariety examples/cyclic/cyclic8 -t 4 -l -d 0" << endl
@@ -375,12 +377,17 @@ int main(int argc, char* argv[])
          }
          else if (Option == "-l")
          {
-            FindLowerHullOnly = true;
+            OnlyFindLowerHull = true;
             i++;
          }
          else if (Option == "-v")
          {
             Verbose = true;
+            i++;
+         }
+         else if (Option == "-h")
+         {
+            OnlyFindHighestDimensionalCones = true;
             i++;
          }
          else if (Option == "-help")
@@ -389,20 +396,20 @@ int main(int argc, char* argv[])
             return 0;
          }
          else 
-            throw invalid_argument("Please input a filename and the number of threads "
-               "to be used.\n For example:\n ./prevariety ./examples/cyclic4 1.");
+            throw invalid_argument("Invalid input. Please run -help for instructions");
    
       };
    } else
-     throw invalid_argument("Invalid configuration. Please run -help for instructions");
+     throw invalid_argument("Invalid input. Please run -help for instructions");
 
    if (Verbose)
    {
-      cout << "----Options----" << endl;
-      cout << "ProcessCount: " << ProcessCount << endl;
-      cout << "Find lower hull: " << FindLowerHullOnly << endl;
-      cout << "Exit on find dimension: " << ExitOnFindDimension << endl;
-      cout << "Seed: " << RandomSeed << endl;
+      cout << "----Options----" << endl
+      << "ProcessCount: " << ProcessCount << endl
+      << "Find lower hull: " << OnlyFindLowerHull << endl
+      << "Exit on find dimension: " << ExitOnFindDimension << endl
+      << "Only find highest dimensional cones: " << OnlyFindHighestDimensionalCones << endl
+      << "Seed: " << RandomSeed << endl;
    };
 
    srand(RandomSeed);
@@ -428,7 +435,7 @@ int main(int argc, char* argv[])
       VectorForOrientation.push_back(rand());
    for (size_t i = 0; i != PolynomialSystemSupport.size(); i++)
       HullCones.push_back(
-         NewHull(PolynomialSystemSupport[i], VectorForOrientation, Verbose, FindLowerHullOnly));
+         NewHull(PolynomialSystemSupport[i], VectorForOrientation, Verbose, OnlyFindLowerHull));
 
    // Initialize each cone's PolytopesVisited object
    for(int i = 0; i != HullCones.size(); i++)
@@ -539,6 +546,21 @@ int main(int argc, char* argv[])
    
    clock_t MarkingTimeStart = clock();
 
+   if (OnlyFindHighestDimensionalCones)
+   {
+      // This is a poor way to do this. Ideally, this process should be integrated into the algorithm.
+      if (Output.ConeTree.size() > 1)
+      {
+         int HighestDimension = Output.ConeTree.size();
+         Output.ConeTree.erase(Output.ConeTree.begin(), Output.ConeTree.begin() + HighestDimension - 1);
+         vector<ConeWithIndicator> EmptyVec;
+         while (HighestDimension > Output.ConeTree.size())
+         {
+            Output.ConeTree.insert(Output.ConeTree.begin(), EmptyVec);
+         }
+      };
+   };
+   
    MarkMaximalCones2(Output, ProcessCount);
    MarkMaximalCones3(Output, ProcessCount);
    double MarkingTime = double(clock() - MarkingTimeStart) / CLOCKS_PER_SEC;

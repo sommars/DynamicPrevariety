@@ -38,7 +38,7 @@ vector<Cone> NewHull(
    FindEdges(H);
    
    Linear_Expression LowerHullLE;
-   LowerHullLE += Variable(0) * -1;
+   LowerHullLE += Variable(0) * 1;
    for (size_t i = 1; i != H.SpaceDimension; i++)
       LowerHullLE += Variable(i) * 0;
    Constraint LowerHullConstraint = LowerHullLE > 0;

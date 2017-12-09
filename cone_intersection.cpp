@@ -197,6 +197,9 @@ void ThreadEnum(
                if (ConeDim == 0)
                   continue;
                   
+               if (ExitOnFindDimension && (ConeDim <= DimensionForExit))
+                  continue;
+                  
                if (TQ->ThreadShouldDie)
                   return;
                ConeWithIndicator CWI;
@@ -488,7 +491,7 @@ int main(int argc, char* argv[])
    
    struct timeval PreIntStartTime, PreIntEndTime;
    gettimeofday(&PreIntStartTime, NULL);
-   int TotalInt = MarkRelationTables(HullCones, RTs, ProcessCount, Verbose);
+   int TotalInt = MarkRelationTables(HullCones, RTs, ProcessCount, DimensionForExit, Verbose);
    gettimeofday(&PreIntEndTime, NULL);
    double PreintersectTime = ((PreIntEndTime.tv_sec  - PreIntStartTime.tv_sec) * 1000000u + 
          PreIntEndTime.tv_usec - PreIntStartTime.tv_usec) / 1.e6;

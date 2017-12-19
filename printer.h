@@ -30,3 +30,9 @@ void PrintRT(vector<BitsetWithCount> &RT);
 
 //------------------------------------------------------------------------------
 void StreamRayToIndexMap(TropicalPrevariety &TP, stringstream &s);
+
+//------------------------------------------------------------------------------
+void StreamRayToIndexMapGfan(TropicalPrevariety &TP, stringstream &s);
+
+//------------------------------------------------------------------------------
+void GetConesAndFvectorForGfan(TropicalPrevariety &TP, stringstream &ConeStream, stringstream &MultiplicitiesStream, stringstream &FvectorStream);

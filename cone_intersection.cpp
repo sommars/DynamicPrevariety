@@ -313,7 +313,8 @@ void PrintHelp()
    << "-u for finding only the open upper hull" << endl
    << "-d for returning the first cone of dimension > d of the tropical prevariety that is found" << endl
    << "-h will return only the highest dimensional cones, which may lead to a speedup" << endl
-   << "-v for verbose" << endl
+   << "-gfan will print the output file in the style of gfan, with a few caveats. LINEALITY_SPACE and ORTH_LINEALITY_SPACE are always empty. SIMPLICIAL and PURE are always 0. CONES is equal to MAXIMAL_CONES, instead of the full cone structure." << endl
+   << "-v for verbose" << endl << endl
    << "An example call to the program is:" << endl
    << "./prevariety examples/cyclic/cyclic8 -t 4 -l -d 0" << endl
    << "which will use four threads to compute the lower tropical prevariety, and will exit as soon as it finds a cone of dimension > 0." << endl;
@@ -331,8 +332,9 @@ int main(int argc, char* argv[])
    
    int ProcessCount = 1;
    vector<vector<vector<int> > > PolynomialSystemSupport;
+   bool UseGfanOutputStyle = false;
    
-   if ((argc == 2) && (string(argv[1]) == "-help"))
+   if (((argc == 2) && (string(argv[1]) == "-help")) || (argc < 2))
    {
       PrintHelp();
       return 0;
@@ -400,6 +402,11 @@ int main(int argc, char* argv[])
          else if (Option == "-h")
          {
             OnlyFindHighestDimensionalCones = true;
+            i++;
+         }
+         else if (Option == "-gfan")
+         {
+            UseGfanOutputStyle = true;
             i++;
          }
          else if (Option == "-help")
@@ -583,50 +590,67 @@ int main(int argc, char* argv[])
    
    stringstream s;
    clock_t PrintingTimeStart = clock();
-   StreamRayToIndexMap(Output, s);
-   PrintMaximalCones(Output, s);
-   
-   gettimeofday(&AlgEndTime, NULL);
-   double TotalAlgTime = ((AlgEndTime.tv_sec  - AlgStartTime.tv_sec) * 1000000u + 
-         AlgEndTime.tv_usec - AlgStartTime.tv_usec) / 1.e6;
-   s << "------ Run data ------" << endl
-   << "Intersections for building RT: " << TotalInt << endl
-   << "Alg intersections: " << ConeIntersectionCount << endl
-   << "Total intersections: " << TotalInt + ConeIntersectionCount << endl
-   << "Preintersection time: " << PreintersectTime << endl
-   << "Marking time: " << MarkingTime << endl
-   << "Pretropisms: " << Output.RayToIndexMap.size() << endl
-   << "Total Alg time: " << TotalAlgTime << endl
-   << "Exited computation early: " << boolalpha << ExitedComputationEarly << endl
-   << fixed << "Random Seed: " << RandomSeed << endl;
-   
+   if (UseGfanOutputStyle)
+   {
+      stringstream ConeStream, FvectorStream, MultiplicitiesStream;
+      GetConesAndFvectorForGfan(Output, ConeStream, MultiplicitiesStream, FvectorStream);
+
+      s << "_application fan" << endl
+      << "_version 2.2" << endl
+      << "_type SymmetricFan" << endl << endl
+      
+      << "AMBIENT_DIM" << endl << HullCones[0][0].HOPolyhedron.space_dimension() << endl << endl
+      
+      << "DIM" << endl << Output.ConeTree.size() << endl << endl
+      
+      << "LINEALITY_DIM" << endl << "0" << endl << endl
+      
+      << "RAYS" << endl;
+      StreamRayToIndexMapGfan(Output, s);
+      
+      s << endl << "N_RAYS" << endl << Output.RayToIndexMap.size() << endl << endl
+      
+      << "LINEALITY_SPACE" << endl << endl
+      
+      << "ORTH_LINEALITY_SPACE" << endl << endl
+      
+      << "F_VECTOR" << endl << FvectorStream.str() << endl << endl
+      
+      << "SIMPLICIAL" << endl << "0" << endl << endl
+      
+      << "PURE" << endl << "0" << endl << endl
+      
+      << "CONES" << endl;
+      if (Output.ConeTree.size() != 0)
+         s << "{}\t# Dimension 0" << endl;
+      s << ConeStream.str() << endl
+      
+      << "MAXIMAL_CONES" << endl << ConeStream.str() << endl
+      
+      << "MULTIPLICITIES" << endl << MultiplicitiesStream.str();
+
+
+   } else {
+      StreamRayToIndexMap(Output, s);
+      PrintMaximalCones(Output, s);
+      
+      gettimeofday(&AlgEndTime, NULL);
+      double TotalAlgTime = ((AlgEndTime.tv_sec  - AlgStartTime.tv_sec) * 1000000u + 
+            AlgEndTime.tv_usec - AlgStartTime.tv_usec) / 1.e6;
+      s << "------ Run data ------" << endl
+      << "Intersections for building RT: " << TotalInt << endl
+      << "Alg intersections: " << ConeIntersectionCount << endl
+      << "Total intersections: " << TotalInt + ConeIntersectionCount << endl
+      << "Preintersection time: " << PreintersectTime << endl
+      << "Marking time: " << MarkingTime << endl
+      << "Pretropisms: " << Output.RayToIndexMap.size() << endl
+      << "Total Alg time: " << TotalAlgTime << endl
+      << "Exited computation early: " << boolalpha << ExitedComputationEarly << endl
+      << fixed << "Random Seed: " << RandomSeed << endl;
+      
+      double PrintingTime = double(clock() - PrintingTimeStart) / CLOCKS_PER_SEC;
+   };
    ofstream OutFile ("output.txt");
    OutFile << s.str();
    OutFile.close();
-   double PrintingTime = double(clock() - PrintingTimeStart) / CLOCKS_PER_SEC;
-   int PositiveCount = 0; int ZeroCount = 0; int NegativeCount = 0;
-   if (Verbose)
-   {
-		  for(map<vector<int>, int>::iterator itr = Output.RayToIndexMap.begin();
-		  itr != Output.RayToIndexMap.end();
-		  ++itr)
-		  {
-		     int testval = itr->first[itr->first.size() - 1];
-		     if (testval > 0)
-		     {
-		        PositiveCount++;
-		     };
-		     if (testval == 0)
-		     {
-		        ZeroCount++;
-		     };
-		     if (testval < 0)
-		     {
-		        NegativeCount++;
-		     };    
-      }
-		  cout << "PositiveCount:" << PositiveCount << endl;
-		  cout << "ZeroCount: " << ZeroCount << endl;
-		  cout << "NegativeCount: " << NegativeCount << endl;
-   }
 }

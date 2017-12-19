@@ -167,3 +167,65 @@ void StreamRayToIndexMap(TropicalPrevariety &TP, stringstream &s)
    }
    return;
 }
+
+//------------------------------------------------------------------------------
+void StreamRayToIndexMapGfan(TropicalPrevariety &TP, stringstream &s)
+{
+   for(map<vector<int>, int>::iterator itr = TP.RayToIndexMap.begin();
+       itr != TP.RayToIndexMap.end();
+       ++itr)
+   {
+      for (size_t i = 0; i != itr->first.size(); i++)
+      {
+         s << itr->first[i];
+         if (i != itr->first.size() - 1)
+            s << " ";
+      };
+      s << "\t# " << itr->second << endl;
+   }
+   return;
+}
+
+//------------------------------------------------------------------------------
+void GetConesAndFvectorForGfan(TropicalPrevariety &TP, stringstream &ConeStream, stringstream &MultiplicitiesStream, stringstream &FvectorStream)
+{
+   if (TP.ConeTree.size() == 0)
+   {
+      ConeStream << "{}\t# Dimension 0" << endl;
+      MultiplicitiesStream << "1\t# Dimension 0" << endl;
+   };
+   vector<int> MaximalConeCounts(TP.ConeTree.size());
+   for (size_t i = 0; i != TP.ConeTree.size(); i++)
+   {
+      for (size_t j = 0; j != TP.ConeTree[i].size(); j++)
+      {
+         if ((TP.ConeTree[i][j].Status != 1) && (i + 1 != TP.ConeTree.size()))
+            continue;
+         set<int>::iterator it;
+         ConeStream << "{";
+         for (it=TP.ConeTree[i][j].RayIndices.begin(); it != TP.ConeTree[i][j].RayIndices.end(); )
+         {
+            ConeStream << (*it);
+            it++;
+            if (it != TP.ConeTree[i][j].RayIndices.end())
+               ConeStream << " ";
+         };
+         ConeStream << "}";
+         MultiplicitiesStream << "1";
+         if (MaximalConeCounts[i] == 0)
+         {
+            ConeStream << "\t# Dimension " << i + 1;
+            MultiplicitiesStream << "\t# Dimension " << i + 1;
+         }
+         MultiplicitiesStream << endl;
+         ConeStream << endl;
+         MaximalConeCounts[i]++;
+      };
+   };      
+
+   FvectorStream << "1";
+   for (size_t i = 0; i != MaximalConeCounts.size(); i++)
+   {
+      FvectorStream << " " << MaximalConeCounts[i];
+   };
+}

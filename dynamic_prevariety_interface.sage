@@ -27,7 +27,7 @@
 from subprocess import Popen, PIPE, call
 import os, inspect
 # CHANGE THE LINE BELOW! Also, Sage has to be run in the same directory as the prevariety program.
-pathToPrevariety = "/home/jeff/GoodDyn2/GoodDynamicPrevariety/DynamicPrevariety"
+pathToPrevariety = "/home/jeff/DynamicPrevariety"
 
 def ParseOutput(FileName):
   with open(FileName,"r") as OutputFile:
@@ -51,12 +51,16 @@ def ParseOutput(FileName):
 	return (ConesList, Rays)
 
 def TropicalPrevariety(polys, ProcessCount = 1):
+    # Accept either an ideal or a list of polynomials.
+	if type(polys) is sage.rings.polynomial.multi_polynomial_ideal.MPolynomialIdeal:
+		polys = polys.gens()
+
 	support = [[[Integer(j) for j in i] for i in poly.exponents()] for poly in polys]
 
 	inputfile = open('inputfile', 'w')
 	for poly in support:
 		inputfile.write("%s\n" % poly)
 	inputfile.close()
-	call([pathToPrevariety + "/prevariety", pathToPrevariety + "/inputfile", str(ProcessCount)])
+	call([pathToPrevariety + "/dynamicprevariety", pathToPrevariety + "/inputfile", "-t", str(ProcessCount)])
 	
 	return ParseOutput(pathToPrevariety + "/output.txt")

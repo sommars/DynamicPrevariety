@@ -20,10 +20,10 @@ else
 ALLOCLINK = -l:$(ALLOC)
 endif
 
-all: prevariety
+all: dynamicprevariety
 
-prevariety: $(OBJ)
-	$(CC) $(CFLAGS) -o prevariety -pthread -std=c++11 $(OBJ) $(SOPLEX) $(PPLLINKEDFILES) $(ALLOCLINK) $(PPLLIBS)
+dynamicprevariety: $(OBJ)
+	$(CC) $(CFLAGS) -o dynamicprevariety -pthread -std=c++11 $(OBJ) $(SOPLEX) $(PPLLINKEDFILES) $(ALLOCLINK) $(PPLLIBS)
 	
 prevariety_types.o: prevariety_types.cpp prevariety_types.h
 	$(CC) $(CFLAGS) -c prevariety_types.cpp $(PPLSRC)
@@ -53,4 +53,4 @@ cone_intersection.o: cone_intersection.cpp
 	$(CC) $(CFLAGS) -c cone_intersection.cpp $(PPLSRC)
 
 clean:
-	/bin/rm -f *.o prevariety
+	/bin/rm -f *.o dynamicprevariety

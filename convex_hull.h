@@ -6,7 +6,7 @@
 
 //------------------------------------------------------------------------------
 vector<Cone> NewHull(
-   vector<vector<int> > &Points,
+   Support &S,
    vector<double> &VectorForOrientation,
    bool Verbose,
    bool FindLowerHullOnly,
@@ -22,4 +22,4 @@ void FindEdges(Hull &H);
 vector<vector<int> > FindCandidateEdges(Hull &H);
 
 //------------------------------------------------------------------------------
-C_Polyhedron FindCPolyhedron(vector<vector<int> > &Points);
+C_Polyhedron FindCPolyhedron(Support &S);

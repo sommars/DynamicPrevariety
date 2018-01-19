@@ -16,10 +16,10 @@ vector<int> ConstraintToPoint(Constraint &c);
 double DoubleInnerProduct(vector<int> &V1, vector<double> &V2);
 
 //------------------------------------------------------------------------------
-vector<vector<vector<int> > > ParseToSupport(string &Input);
+vector<Support> ParseToSupport(string &Input, bool HasSigns);
 
 //------------------------------------------------------------------------------
-vector<vector<vector<int> > > ParseSupportFile(string &FileName);
+vector<Support> ParseSupportFile(string &FileName, bool HasSigns);
 
 //------------------------------------------------------------------------------
 C_Polyhedron RaysToCone(vector<vector<int> > &Rays);

@@ -7,6 +7,31 @@
 using namespace std;
 namespace Parma_Polyhedra_Library {using IO_Operators::operator<<;}
 
+enum SupportPointSign {PLUS, MINUS, NONE};
+
+//------------------------------------------------------------------------------
+struct SupportPoint
+{
+   vector<int> Pt;
+   double IP;
+   SupportPointSign Sign;
+   bool operator<( const SupportPoint& other ) const
+   {
+      for (size_t i = 0; i != Pt.size(); i++)
+      {
+         if (Pt[i] != other.Pt[i])
+            return Pt[i] < other.Pt[i];
+      };
+      return false;
+   };
+};
+
+//------------------------------------------------------------------------------
+struct Support
+{
+   vector<SupportPoint> Pts;
+};
+
 //------------------------------------------------------------------------------
 struct BitsetWithCount
 {
@@ -49,9 +74,9 @@ struct Hull
 {
    // Convex hull object, used to create the initial set of cones for each
    // polytope.
-   vector<vector<int> > Points;
-   map<vector<int>,int> PointToIndexMap;
-   map<int,vector<int> > IndexToPointMap;
+   Support S;
+   map<SupportPoint,int> PointToIndexMap;
+   map<int,SupportPoint> IndexToPointMap;
    vector<Edge> Edges;
    vector<Cone> Cones;
    vector<Facet> Facets;

@@ -1,8 +1,10 @@
 #include "convex_hull.h"
 
+bool SupportPtSort (SupportPoint i, SupportPoint j) { return (i.IP < j.IP); }
+
 //------------------------------------------------------------------------------
 vector<Cone> NewHull(
-   vector<vector<int> > &Points,
+   Support &S,
    vector<double> &VectorForOrientation, 
    bool Verbose,
    bool FindLowerHullOnly,
@@ -11,26 +13,24 @@ vector<Cone> NewHull(
    // For a given set of points and orientation vector, this function computes
    // the set of half open edge cones for the polytope defined by these points.
    Hull H;
-   H.CPolyhedron = FindCPolyhedron(Points);
-   map<double,vector<int> > DoubleToPt;
-   vector<double> IPs;
-   for (size_t i = 0; i != Points.size(); i++)
+   H.CPolyhedron = FindCPolyhedron(S);
+   for (size_t i = 0; i != S.Pts.size(); i++)
    {
-      double IP = DoubleInnerProduct(Points[i], VectorForOrientation);
-      IPs.push_back(IP);
-      DoubleToPt[IP] = Points[i];
+      S.Pts[i].IP = DoubleInnerProduct(S.Pts[i].Pt, VectorForOrientation);
    };
-   sort(IPs.begin(), IPs.end());
-   for (size_t i = 0; i != IPs.size(); i++)
-      H.Points.push_back(DoubleToPt[IPs[i]]);
+   
+   sort(S.Pts.begin(), S.Pts.end(), SupportPtSort);
+   
+   for (size_t i = 0; i != S.Pts.size(); i++)
+      H.S.Pts.push_back(S.Pts[i]);
 
    H.AffineDimension = H.CPolyhedron.affine_dimension();
    H.SpaceDimension = H.CPolyhedron.space_dimension();
       
    // Create PointToIndexMap
-   for (size_t i = 0; i != H.Points.size(); i++)
+   for (size_t i = 0; i != H.S.Pts.size(); i++)
    {
-      vector<int> Point = H.Points[i];
+      SupportPoint Point = H.S.Pts[i];
       H.PointToIndexMap[Point]=i;
       H.IndexToPointMap[i]=Point;
    };
@@ -50,11 +50,11 @@ vector<Cone> NewHull(
    Constraint LowerHullConstraint = LowerHullLE > 0;
    Constraint UpperHullConstraint = UpperHullLE > 0;
    
-   for (size_t i = 0; i != H.Points.size(); i++)
+   for (size_t i = 0; i != H.S.Pts.size(); i++)
    {
       vector<Constraint> Constraints;
-      vector<int> Pt = H.Points[i];
-      int PtIndex = H.PointToIndexMap[Pt];
+      SupportPoint CurrentPt = H.S.Pts[i];
+      int PtIndex = H.PointToIndexMap[CurrentPt];
       // Go through all of the edges. If the edge is not on the facet.
       for (size_t j = 0; j != H.Edges.size(); j++)
       {
@@ -62,7 +62,7 @@ vector<Cone> NewHull(
              != H.Edges[j].PointIndices.end())
          {
             set<int>::iterator PtIter;
-            vector<int> OtherPt;
+            SupportPoint OtherPt;
             int OtherPtIndex;
             for (PtIter=H.Edges[j].PointIndices.begin();
                  PtIter != H.Edges[j].PointIndices.end();
@@ -74,8 +74,8 @@ vector<Cone> NewHull(
             };
             
             Linear_Expression LE;
-            for (size_t k = 0; k != Pt.size(); k++)
-               LE += (OtherPt[k] - Pt[k]) * Variable(k);
+            for (size_t k = 0; k != CurrentPt.Pt.size(); k++)
+               LE += (OtherPt.Pt[k] - CurrentPt.Pt[k]) * Variable(k);
             
             // Manufacture the constraint from the edge.
             Constraint c;
@@ -146,7 +146,7 @@ vector<Cone> NewHull(
    if (Verbose)
    {
       cout << "Convex hull------------------------" << endl;
-      PrintPoints(H.Points);
+      PrintSupport(H.S);
       cout << "Affine dimension: " << H.AffineDimension << endl;
       cout << "Space dimension: " << H.SpaceDimension << endl;
       cout << "Number of cones: " << H.Cones.size() << endl;
@@ -170,14 +170,12 @@ void FindFacets(Hull &H)
          continue;
       Constraint C = *i;
       vector<int> Pt = ConstraintToPoint(C);
-      vector<vector<int> > FacetPts = FindInitialForm(H.Points, Pt);
+      Support FacetPts = FindInitialForm(H.S, Pt);
       
       Facet F;
-      for (vector<vector<int> >::iterator itr = FacetPts.begin();
-           itr != FacetPts.end();
-           itr++)
+      for (size_t j = 0; j != FacetPts.Pts.size(); j++)
       {
-         F.PointIndices.insert(H.PointToIndexMap[*itr]);
+         F.PointIndices.insert(H.PointToIndexMap[FacetPts.Pts[j]]);
       };
       F.Normal = Pt;
       H.Facets.push_back(F);
@@ -216,7 +214,7 @@ void FindEdges(Hull &H)
          }
       };
       if ((FacetCount >= Dim)
-      && (FindInitialForm(H.Points, VectorInCone).size() == 2))
+      && (FindInitialForm(H.S, VectorInCone).Pts.size() == 2))
       {
          Edge NewEdge;
          NewEdge.PointIndices.insert(Point1);
@@ -255,7 +253,7 @@ vector<vector<int> > FindCandidateEdges(Hull &H)
    // Helper function for FindEdges. Again, there _has_ to be a better way to
    // do this.
    vector<vector<int> > CandidateEdges;
-   int n = H.Points.size();
+   int n = H.S.Pts.size();
    vector<int> d(n);
    for (size_t i = 0; i != d.size(); ++i)
       d[i] = i;
@@ -274,17 +272,15 @@ vector<vector<int> > FindCandidateEdges(Hull &H)
 }
 
 //------------------------------------------------------------------------------
-C_Polyhedron FindCPolyhedron(vector<vector<int> > &Points)
+C_Polyhedron FindCPolyhedron(Support &S)
 {
    // Converts an input set of pts to a PPL C_Polyhedron
    Generator_System gs;
-   for (vector<vector<int> >::iterator itr=Points.begin();
-        itr != Points.end();
-        itr++)
+   for (size_t i = 0; i != S.Pts.size(); i++)
    {
       Linear_Expression LE;
-      for (size_t i = 0; i != itr->size(); i++)
-         LE += Variable(i) * ((*itr)[i]);
+      for (size_t j = 0; j != S.Pts[i].Pt.size(); j++)
+         LE += Variable(i) * (S.Pts[i].Pt[j]);
       gs.insert(point(LE));
    };
    return C_Polyhedron(gs);

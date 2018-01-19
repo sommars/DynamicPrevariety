@@ -71,62 +71,83 @@ double DoubleInnerProduct(vector<int> &V1, vector<double> &V2)
 }
 
 //------------------------------------------------------------------------------
-vector<vector<vector<int> > > ParseToSupport(string &Input)
+vector<Support> ParseToSupport(string &Input, bool HasSigns)
 {
    // Takes in strings that look like this:
    //'[[[1,0,0,0][0,1,0,0][0,0,1,0][0,0,0,1]]' + 
-   //'[[1,1,0,0][0,1,1,0][1,0,0,1][0,0,1,1]]' + 
+   //'[[1,1,0,0][0,1,1,0][1,0,0,1][0,0,1,1]]' +
    //'[[1,1,1,0][1,1,0,1][1,0,1,1][0,1,1,1]]]'
-   // and converts them to support sets. This exists for the Python interface.
-   vector<vector<vector<int> > > Result;
+   vector<Support> Result;
    int ParenCount = 0;
-   string NewInt;
-   vector<vector<int> > Polynomial;
-   vector<int> Monomial;
+   string NewTerm;
+   Support Polynomial;
+   SupportPoint Monomial;
    for (string::iterator it=Input.begin(); it!=Input.end(); ++it)
    {
-      if ((*it) == '[')
+      if ((*it) == ' ')
+         continue;
+      else if ((*it) == '[')
          ParenCount++;
       else if ((*it) == ']')
       {
          ParenCount--;
-         if (NewInt.length() > 0)
+         if (NewTerm.length() > 0)
          {
-            Monomial.push_back(stoi(NewInt));
-            NewInt.clear();
+            if (NewTerm == "+")
+               Monomial.Sign = PLUS;
+            else if (NewTerm == "-")
+               Monomial.Sign = MINUS;
+            else
+            {
+               Monomial.Sign = NONE;
+               Monomial.Pt.push_back(stoi(NewTerm));
+            }
+            NewTerm.clear();
          };
          if (ParenCount == 2)
          {
-            Polynomial.push_back(Monomial);
-            Monomial.clear();
+            Polynomial.Pts.push_back(Monomial);
+            Monomial.Pt.clear();
          } else if (ParenCount == 1)
          {
             Result.push_back(Polynomial);
-            Polynomial.clear();
+            Polynomial.Pts.clear();
          };
       } else if ((*it) == ',')
       {
-         if (NewInt.length() > 0)
+         if (NewTerm.length() > 0)
          {
-            Monomial.push_back(stoi(NewInt));
-            NewInt.clear();
+            Monomial.Pt.push_back(stoi(NewTerm));
+            NewTerm.clear();
          };
       } else
-         NewInt += (*it);
+         NewTerm += (*it);
    };
 
+   for (size_t i = 0; i != Result.size(); i++)
+   {
+      for (size_t j = 0; j != Result[i].Pts.size(); j++)
+      {
+         if (HasSigns && Result[i].Pts[j].Sign == NONE)
+            throw invalid_argument("All points must have signs when run with the sign option.");
+
+         if (!HasSigns && Result[i].Pts[j].Sign != NONE)
+            throw invalid_argument("No points may have signs. If you want to use signs, run with the appropriate option.");
+      };
+   };
+   
    return Result;
 };
 
 //------------------------------------------------------------------------------
-vector<vector<vector<int> > > ParseSupportFile(string &FileName)
+vector<Support> ParseSupportFile(string &FileName, bool HasSigns)
 {
    ifstream t(FileName);
    string str((std::istreambuf_iterator<char>(t)),std::istreambuf_iterator<char>());
    t.close();
    str.erase(std::remove(str.begin(), str.end(), '\n'), str.end());
    str = "[" + str + "]";
-   return ParseToSupport(str);
+   return ParseToSupport(str, HasSigns);
 };
 
 //------------------------------------------------------------------------------

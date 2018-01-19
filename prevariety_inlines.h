@@ -19,34 +19,34 @@ inline NNC_Polyhedron IntersectCones(NNC_Polyhedron ph1, NNC_Polyhedron &ph2)
 };
 
 //------------------------------------------------------------------------------
-inline vector<vector<int> > FindInitialForm(
-   vector<vector<int> > &Points, vector<int> &Vector)
+inline Support FindInitialForm(
+   Support &S, vector<int> &Vector)
 {
    // Computes the initial form of a vector and a set of points.
-   if (Points.size() == 0)
-      return Points;
-   vector<vector<int> > InitialForm;
+   if (S.Pts.size() == 0)
+      return S;
+   Support InitialForm;
 
-   vector<int> *Point;
-   Point = &(Points[0]);
-   InitialForm.push_back(*Point);
+   SupportPoint *Point;
+   Point = &(S.Pts[0]);
+   InitialForm.Pts.push_back(*Point);
    int MinimalIP = 0;
-   for (size_t i = 0; i != (*Point).size(); i++)
-      MinimalIP += Vector[i] * (*Point)[i];
+   for (size_t i = 0; i != (*Point).Pt.size(); i++)
+      MinimalIP += Vector[i] * (*Point).Pt[i];
 
-   for (size_t i = 1; i != Points.size(); i++)
+   for (size_t i = 1; i != S.Pts.size(); i++)
    {
-      Point = &(Points[i]);
+      Point = &(S.Pts[i]);
       int IP = 0;
-      for (size_t j = 0; j != (*Point).size(); j++)
-         IP += Vector[j] * (*Point)[j];
+      for (size_t j = 0; j != (*Point).Pt.size(); j++)
+         IP += Vector[j] * (*Point).Pt[j];
       if (MinimalIP > IP)
       {
          MinimalIP = IP;
-         InitialForm.clear();
-         InitialForm.push_back(*Point);
+         InitialForm.Pts.clear();
+         InitialForm.Pts.push_back(*Point);
       } else if (IP == MinimalIP)
-         InitialForm.push_back(*Point);
+         InitialForm.Pts.push_back(*Point);
    };
    
    return InitialForm;

@@ -23,6 +23,13 @@ void PrintPoints(vector<vector<int> > &Points)
 }
 
 //------------------------------------------------------------------------------
+void PrintSupport(Support &S)
+{
+   for (size_t i = 0; i != S.Pts.size(); i++)
+      PrintPoint(S.Pts[i].Pt);
+}
+
+//------------------------------------------------------------------------------
 void PrintPoint(set<int> &Point)
 {
    set<int>::iterator it;

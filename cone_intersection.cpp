@@ -314,6 +314,7 @@ void PrintHelp()
    << "-d for returning the first cone of dimension > d of the tropical prevariety that is found" << endl
    << "-h will return only the highest dimensional cones, which may lead to a speedup" << endl
    << "-gfan will print the output file in the style of gfan, with a few caveats. LINEALITY_SPACE and ORTH_LINEALITY_SPACE are always empty. SIMPLICIAL and PURE are always 0. CONES is equal to MAXIMAL_CONES, instead of the full cone structure." << endl
+   << "-+ expects that each point in the support has a sign. Here is an example of a point with a sign: [1,1,1,+]" << endl
    << "-v for verbose" << endl << endl
    << "An example call to the program is:" << endl
    << "./prevariety examples/cyclic/cyclic8 -t 4 -l -d 0" << endl
@@ -331,8 +332,8 @@ int main(int argc, char* argv[])
    double RandomSeed = time(NULL);
    
    int ProcessCount = 1;
-   vector<vector<vector<int> > > PolynomialSystemSupport;
    bool UseGfanOutputStyle = false;
+   bool ExpectSigns = false;
    
    if (((argc == 2) && (string(argv[1]) == "-help")) || (argc < 2))
    {
@@ -340,14 +341,13 @@ int main(int argc, char* argv[])
       return 0;
    };
    
+   string FileName;
    if (argc >= 2)
    {
-      string FileName;
       FileName = string(argv[1]);
       ifstream f(FileName.c_str());
       if (!f.good())
          throw invalid_argument("Please input a valid filename.");
-      PolynomialSystemSupport = ParseSupportFile(FileName);
 
       for (size_t i = 2; i < argc; )
       {
@@ -409,14 +409,19 @@ int main(int argc, char* argv[])
             UseGfanOutputStyle = true;
             i++;
          }
+         else if (Option == "-+")
+         {
+            ExpectSigns = true;
+            i++;
+         }
          else if (Option == "-help")
          {
             PrintHelp();
             return 0;
          }
-         else 
+         else
             throw invalid_argument("Invalid input. Please run -help for instructions");
-   
+
       };
    } else
      throw invalid_argument("Invalid input. Please run -help for instructions");
@@ -432,18 +437,12 @@ int main(int argc, char* argv[])
       << "Find upper hull: " << OnlyFindUpperHull << endl
       << "Exit on find dimension: " << ExitOnFindDimension << endl
       << "Only find highest dimensional cones: " << OnlyFindHighestDimensionalCones << endl
-      << "Seed: " << RandomSeed << endl;
+      << "ExpectSigns: " << ExpectSigns << endl
+      << "Seed: " << fixed << RandomSeed << endl;
    };
 
    srand(RandomSeed);
       
-   bool DoMixedVol = false;
-   if (DoMixedVol)
-   {
-      for (size_t i = 0; i != PolynomialSystemSupport.size(); i++)
-         for (size_t j = 0; j != PolynomialSystemSupport[i].size(); j++)
-            PolynomialSystemSupport[i][j].push_back((rand() % 100000) + 1);
-   };
    if (ProcessCount > thread::hardware_concurrency())
    {
       string ThreadErrorMsg = "Internal error: hardware_concurrency = "
@@ -452,13 +451,17 @@ int main(int argc, char* argv[])
                               + to_string(ProcessCount);
       throw invalid_argument(ThreadErrorMsg);
    };
-   vector<vector<Cone> > HullCones;
+   
+   vector<Support> Supports = ParseSupportFile(FileName, ExpectSigns);
+
    vector<double> VectorForOrientation;
-   for (size_t i = 0; i != PolynomialSystemSupport[0][0].size(); i++)
+   for (size_t i = 0; i != Supports[0].Pts[0].Pt.size(); i++)
       VectorForOrientation.push_back(rand());
-   for (size_t i = 0; i != PolynomialSystemSupport.size(); i++)
+      
+   vector<vector<Cone> > HullCones;
+   for (size_t i = 0; i != Supports.size(); i++)
       HullCones.push_back(
-         NewHull(PolynomialSystemSupport[i], VectorForOrientation, Verbose, OnlyFindLowerHull, OnlyFindUpperHull));
+         NewHull(Supports[i], VectorForOrientation, Verbose, OnlyFindLowerHull, OnlyFindUpperHull));
 
    // Initialize each cone's PolytopesVisited object
    for(int i = 0; i != HullCones.size(); i++)

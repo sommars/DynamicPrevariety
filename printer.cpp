@@ -25,8 +25,13 @@ void PrintPoints(vector<vector<int> > &Points)
 //------------------------------------------------------------------------------
 void PrintSupport(Support &S)
 {
-   for (size_t i = 0; i != S.Pts.size(); i++)
+   for (size_t i = 0; i != S.Pts.size(); i++) {
+      if (S.Pts[i].Sign == PLUS)
+         cout << "+ ";
+      else if (S.Pts[i].Sign == MINUS)
+         cout << "- ";
       PrintPoint(S.Pts[i].Pt);
+   };
 }
 
 //------------------------------------------------------------------------------

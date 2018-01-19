@@ -280,7 +280,7 @@ C_Polyhedron FindCPolyhedron(Support &S)
    {
       Linear_Expression LE;
       for (size_t j = 0; j != S.Pts[i].Pt.size(); j++)
-         LE += Variable(i) * (S.Pts[i].Pt[j]);
+         LE += Variable(j) * (S.Pts[i].Pt[j]);
       gs.insert(point(LE));
    };
    return C_Polyhedron(gs);

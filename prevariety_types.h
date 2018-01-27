@@ -58,7 +58,6 @@ struct Edge
 {
    // Represents an edge, used primarily for convex hull computations.
    set<int> PointIndices;
-   set<int> NeighborIndices;
 };
 
 //------------------------------------------------------------------------------

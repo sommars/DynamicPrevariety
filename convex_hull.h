@@ -5,7 +5,7 @@
 #include "prevariety_util.h"
 
 //------------------------------------------------------------------------------
-vector<Cone> NewHull(
+vector<Cone> GetDisjointHalfOpenConesFromPolytope(
    Support &S,
    vector<double> &VectorForOrientation,
    bool Verbose,
@@ -13,13 +13,9 @@ vector<Cone> NewHull(
    bool FindUpperHullOnly);
 
 //------------------------------------------------------------------------------
-void FindFacets(Hull &H);
-
-//------------------------------------------------------------------------------
-void FindEdges(Hull &H);
-
-//------------------------------------------------------------------------------
-vector<vector<int> > FindCandidateEdges(Hull &H);
+vector<Cone> GetDisjointHalfOpenConesFromSignedPolytope(
+   Support &S,
+   bool Verbose);
 
 //------------------------------------------------------------------------------
 C_Polyhedron FindCPolyhedron(Support &S);

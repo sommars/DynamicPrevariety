@@ -429,6 +429,9 @@ int main(int argc, char* argv[])
    if (OnlyFindLowerHull && OnlyFindUpperHull)
      throw invalid_argument("Cannot find only upper hull and only lower hull.");
    
+   if (ExpectSigns && (OnlyFindLowerHull || OnlyFindUpperHull))
+     throw invalid_argument("Currently ExpectSigns is incompatible with intersecting with a halfspace.");
+     
    if (Verbose)
    {
       cout << "----Options----" << endl
@@ -460,8 +463,11 @@ int main(int argc, char* argv[])
       
    vector<vector<Cone> > HullCones;
    for (size_t i = 0; i != Supports.size(); i++)
-      HullCones.push_back(
-         NewHull(Supports[i], VectorForOrientation, Verbose, OnlyFindLowerHull, OnlyFindUpperHull));
+      if (!ExpectSigns)
+         HullCones.push_back(
+            GetDisjointHalfOpenConesFromPolytope(Supports[i], VectorForOrientation, Verbose, OnlyFindLowerHull, OnlyFindUpperHull));
+      else
+         HullCones.push_back(GetDisjointHalfOpenConesFromSignedPolytope(Supports[i], Verbose));
 
    // Initialize each cone's PolytopesVisited object
    for(int i = 0; i != HullCones.size(); i++)

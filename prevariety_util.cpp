@@ -123,19 +123,27 @@ vector<Support> ParseToSupport(string &Input, bool HasSigns)
       } else
          NewTerm += (*it);
    };
-
+   
    for (size_t i = 0; i != Result.size(); i++)
    {
+   
+      int NumberOfPlus = 0;
       for (size_t j = 0; j != Result[i].Pts.size(); j++)
       {
+         if (Result[i].Pts[j].Sign == PLUS)
+            NumberOfPlus++;
+            
          if (HasSigns && Result[i].Pts[j].Sign == NONE)
             throw invalid_argument("All points must have signs when run with the sign option.");
 
          if (!HasSigns && Result[i].Pts[j].Sign != NONE)
             throw invalid_argument("No points may have signs. If you want to use signs, run with the appropriate option.");
       };
+      if (HasSigns && NumberOfPlus != 1)
+         throw invalid_argument("Exactly one point per polytope must have a positive sign. All others must be negative.");
+
    };
-   
+
    return Result;
 };
 

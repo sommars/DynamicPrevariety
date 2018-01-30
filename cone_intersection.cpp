@@ -660,7 +660,7 @@ int main(int argc, char* argv[])
       s << "    </m>" << endl
       << "  </property>" << endl
       << "  <property name=\"MAXIMAL_CONES\">" << endl
-      << "    <m cols=\"3\">" << endl;
+      << "    <m cols=\"" << Output.RayToIndexMap.size() << "\">" << endl;
       
       StreamMaximalConesPolymake(Output, s);
       

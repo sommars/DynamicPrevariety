@@ -199,6 +199,25 @@ void StreamRayToIndexMapGfan(TropicalPrevariety &TP, stringstream &s)
 }
 
 //------------------------------------------------------------------------------
+void StreamRayToIndexMapPolymake(TropicalPrevariety &TP, stringstream &s)
+{
+   for(map<int, vector<int>>::iterator itr = TP.IndexToRayMap.begin();
+       itr != TP.IndexToRayMap.end();
+       ++itr)
+   {
+      s << "      <v>";
+      for (size_t i = 0; i != itr->second.size(); i++)
+      {
+         s << itr->second[i];
+         if (i != itr->second.size() - 1)
+            s << " ";
+      };
+      s << "</v>" << endl;
+   }
+   return;
+};
+
+//------------------------------------------------------------------------------
 void GetConesAndFvectorForGfan(TropicalPrevariety &TP, stringstream &ConeStream, stringstream &MultiplicitiesStream, stringstream &FvectorStream)
 {
    if (TP.ConeTree.size() == 0)
@@ -233,7 +252,7 @@ void GetConesAndFvectorForGfan(TropicalPrevariety &TP, stringstream &ConeStream,
          ConeStream << endl;
          MaximalConeCounts[i]++;
       };
-   };      
+   };
 
    FvectorStream << "1";
    for (size_t i = 0; i != MaximalConeCounts.size(); i++)
@@ -241,3 +260,27 @@ void GetConesAndFvectorForGfan(TropicalPrevariety &TP, stringstream &ConeStream,
       FvectorStream << " " << MaximalConeCounts[i];
    };
 }
+
+//------------------------------------------------------------------------------
+void StreamMaximalConesPolymake(TropicalPrevariety &TP, stringstream &s)
+{
+   for (size_t i = 0; i != TP.ConeTree.size(); i++)
+   {
+      for (size_t j = 0; j != TP.ConeTree[i].size(); j++)
+      {
+         if ((TP.ConeTree[i][j].Status != 1) && (i + 1 != TP.ConeTree.size()))
+            continue;
+         set<int>::iterator it;
+         s << "      <v>";
+         for (it=TP.ConeTree[i][j].RayIndices.begin(); it != TP.ConeTree[i][j].RayIndices.end(); )
+         {
+            s << (*it);
+            it++;
+            if (it != TP.ConeTree[i][j].RayIndices.end())
+               s << " ";
+         };
+         s << "</v>" << endl;
+      };
+   };
+
+};

@@ -314,6 +314,7 @@ void PrintHelp()
    << "-d for returning the first cone of dimension > d of the tropical prevariety that is found" << endl
    << "-h will return only the highest dimensional cones, which may lead to a speedup" << endl
    << "-gfan will print the output file in the style of gfan, with a few caveats. LINEALITY_SPACE and ORTH_LINEALITY_SPACE are always empty. SIMPLICIAL and PURE are always 0. CONES is equal to MAXIMAL_CONES, instead of the full cone structure." << endl
+   << "-polymake will print the output file in the XML format of polymake." << endl
    << "-+ expects that each point in the support has a sign. Here is an example of a point with a sign: [1,1,1,+]" << endl
    << "-v for verbose" << endl << endl
    << "An example call to the program is:" << endl
@@ -333,6 +334,7 @@ int main(int argc, char* argv[])
    
    int ProcessCount = 1;
    bool UseGfanOutputStyle = false;
+   bool UsePolymakeXMLOutputStyle = false;
    bool ExpectSigns = false;
    
    if (((argc == 2) && (string(argv[1]) == "-help")) || (argc < 2))
@@ -409,6 +411,11 @@ int main(int argc, char* argv[])
             UseGfanOutputStyle = true;
             i++;
          }
+         else if (Option == "-polymake")
+         {
+            UsePolymakeXMLOutputStyle = true;
+            i++;
+         }
          else if (Option == "-+")
          {
             ExpectSigns = true;
@@ -431,6 +438,9 @@ int main(int argc, char* argv[])
    
    if (ExpectSigns && (OnlyFindLowerHull || OnlyFindUpperHull))
      throw invalid_argument("Currently ExpectSigns is incompatible with intersecting with a halfspace.");
+     
+   if (UseGfanOutputStyle && UsePolymakeXMLOutputStyle)
+     throw invalid_argument("Only one output format at a time can be specified.");
      
    if (Verbose)
    {
@@ -637,8 +647,27 @@ int main(int argc, char* argv[])
       << "MAXIMAL_CONES" << endl << ConeStream.str() << endl
       
       << "MULTIPLICITIES" << endl << MultiplicitiesStream.str();
-
-
+   }
+   else if (UsePolymakeXMLOutputStyle)
+   {
+      s << "<?xml version=\"1.0\" encoding=\"utf-8\"?>" << endl << endl
+      << "<object name=\"simple\" type=\"fan::PolyhedralFan&lt;Rational&gt;\" version=\"3.2\" xmlns=\"http://www.math.tu-berlin.de/polymake/#3\">" << endl
+      << "  <property name=\"RAYS\">" << endl
+      << "    <m>" << endl;
+      
+      StreamRayToIndexMapPolymake(Output, s);
+      
+      s << "    </m>" << endl
+      << "  </property>" << endl
+      << "  <property name=\"MAXIMAL_CONES\">" << endl
+      << "    <m cols=\"3\">" << endl;
+      
+      StreamMaximalConesPolymake(Output, s);
+      
+      s << "    </m>" << endl
+      << "  </property>" << endl
+      << "</object>" << endl;
+   
    } else {
       StreamRayToIndexMap(Output, s);
       PrintMaximalCones(Output, s);

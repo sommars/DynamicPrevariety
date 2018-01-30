@@ -31,9 +31,4 @@ The software is based off algorithms described in:
 ### Using DynamicPrevariety: ###
 
 * DynamicPrevariety takes in support sets of Newton polytopes written to file; for examples, see the examples folder. To compute the prevariety of the cyclic-8 roots problem, run ./prevariety ./examples/cyclic/cyclic8.
-* There are several options that can be set:
-  - To use multiple threads, pass in -t followed by an integer number of threads.
-  - To find the first cone of dimension greater than D, pass in -d D where D is an integer >= 0.
-  - If you want to find the tropical prevariety in either the open lower/upper halfspace, pass in -l/-u.
-  - For only the highest dimensional maximal cones, use -h.
-  - For verbose mode, use -v.
+* There are several options that can be set. Run `./dynamicprevariety -help` for more information.

@@ -17,7 +17,9 @@ The software is based off algorithms described in:
     ./configure --enable-thread-safe
     make
     ```
-* (Optional) Install tcmalloc (http://goog-perftools.sourceforge.net/doc/tcmalloc.html) This will lead to substantial improvements in parallel performance.
+* (Optional) Install tcmalloc (http://goog-perftools.sourceforge.net/doc/tcmalloc.html)
+
+    This will lead to substantial improvements in parallel performance.
 
 * Making DynamicPrevariety
     ```
@@ -28,6 +30,7 @@ The software is based off algorithms described in:
     Note that the PPLPATH and ALLOC name will likely be different for you. If you choose not to install tcmalloc, exclude that argument from the make command. If you installed ppl as root, it may not be necessary for you to pass in the absolute path to ppl.
 
 * (Optional) Installing DynamicPrevariety
+
     If you want to be able to run the software in any directory, you can run `make install` and it will be installed in /usr/local/bin. If you prefer a different location, run `make install PREFIX=/desired/absolute/path`.
 
 ### Using DynamicPrevariety: ###

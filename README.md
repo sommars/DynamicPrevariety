@@ -7,7 +7,7 @@ The software is based off algorithms described in:
 
 ### Install Instructions: ###
 
-* Begin by installing a branch of PPL
+* Begin by making a branch of PPL
     ```
     git clone git://git.cs.unipr.it/ppl/ppl.git
     cd ppl
@@ -19,7 +19,7 @@ The software is based off algorithms described in:
     ```
 * (Optional) Install tcmalloc (http://goog-perftools.sourceforge.net/doc/tcmalloc.html) This will lead to substantial improvements in parallel performance.
 
-* Install DynamicPrevariety
+* Making DynamicPrevariety
     ```
     git clone git@github.com:sommars/DynamicPrevariety.git
     cd DynamicPrevariety
@@ -27,7 +27,10 @@ The software is based off algorithms described in:
     ```
     Note that the PPLPATH and ALLOC name will likely be different for you. If you choose not to install tcmalloc, exclude that argument from the make command. If you installed ppl as root, it may not be necessary for you to pass in the absolute path to ppl.
 
+* (Optional) Installing DynamicPrevariety
+    If you want to be able to run the software in any directory, you can run `make install` and it will be installed in /usr/local/bin. If you prefer a different location, run `make install PREFIX=/desired/absolute/path`.
+
 ### Using DynamicPrevariety: ###
 
-* DynamicPrevariety takes in support sets of Newton polytopes written to file; for examples, see the examples folder. To compute the prevariety of the cyclic-8 roots problem, run ./dynamicprevariety ./examples/cyclic/cyclic8.
+* DynamicPrevariety takes in support sets of Newton polytopes written to file; for examples, see the examples folder. To compute the prevariety of the cyclic-8 roots problem, run `./dynamicprevariety ./examples/cyclic/cyclic8`.
 * There are several options that can be set. Run `./dynamicprevariety -help` for more information.

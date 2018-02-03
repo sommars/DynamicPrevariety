@@ -1,6 +1,3 @@
-#PPLPATH = /home/sommars1/ppl-061039a/src/
-#ALLOC = libtcmalloc_minimal.so.4.2.6
-
 CC = g++
 CFLAGS = -O3 -std=c++11
 PPLLINKEDFILES = -lppl -lgmpxx -lgmp -lz
@@ -19,6 +16,8 @@ ALLOCLINK =
 else
 ALLOCLINK = -l:$(ALLOC)
 endif
+
+PREFIX = /usr/local
 
 all: dynamicprevariety
 
@@ -54,3 +53,10 @@ cone_intersection.o: cone_intersection.cpp
 
 clean:
 	/bin/rm -f *.o dynamicprevariety
+
+install: dynamicprevariety
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
+	cp $< $(DESTDIR)$(PREFIX)/bin/dynamicprevariety
+
+uninstall:
+	rm -f $(DESTDIR)$(PREFIX)/bin/dynamicprevariety

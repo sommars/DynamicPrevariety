@@ -308,14 +308,15 @@ void PrintHelp()
 {
    cout << "This program computes the tropical prevariety of a set of set of points." << endl << endl
    << "Valid options include:" << endl
-   << "-t for setting the number of threads" << endl
+   << "-t X for setting it to run with X threads" << endl
    << "-l for finding only the open lower hull" << endl
    << "-u for finding only the open upper hull" << endl
-   << "-d for returning the first cone of dimension > d of the tropical prevariety that is found" << endl
+   << "-d X for returning the first cone of dimension > X of the tropical prevariety that is found" << endl
    << "-h will return only the highest dimensional cones, which may lead to a speedup" << endl
    << "-gfan will print the output file in the style of gfan, with a few caveats. LINEALITY_SPACE and ORTH_LINEALITY_SPACE are always empty. SIMPLICIAL and PURE are always 0. CONES is equal to MAXIMAL_CONES, instead of the full cone structure." << endl
    << "-polymake will print the output file in the XML format of polymake." << endl
    << "-+ expects that each point in the support has a sign. Here is an example of a point with a sign: [1,1,1,+]" << endl
+   << "-o X where X is the name of the desired output file" << endl
    << "-v for verbose" << endl << endl
    << "An example call to the program is:" << endl
    << "./prevariety examples/cyclic/cyclic8 -t 4 -l -d 0" << endl
@@ -343,6 +344,7 @@ int main(int argc, char* argv[])
       return 0;
    };
    
+   string OutputFileName = "output.txt";
    string FileName;
    if (argc >= 2)
    {
@@ -394,6 +396,12 @@ int main(int argc, char* argv[])
          else if (Option == "-u")
          {
             OnlyFindUpperHull = true;
+            i++;
+         }
+         else if (Option == "-o")
+         {
+            OutputFileName = string(argv[i+1]);
+            i++;
             i++;
          }
          else if (Option == "-v")
@@ -688,7 +696,7 @@ int main(int argc, char* argv[])
       
       double PrintingTime = double(clock() - PrintingTimeStart) / CLOCKS_PER_SEC;
    };
-   ofstream OutFile ("output.txt");
+   ofstream OutFile (OutputFileName);
    OutFile << s.str();
    OutFile.close();
 }

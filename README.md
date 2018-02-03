@@ -16,7 +16,6 @@ The software is based off algorithms described in:
     autoreconf
     ./configure --enable-thread-safe
     make
-    make install
     ```
 * (Optional) Install tcmalloc (http://goog-perftools.sourceforge.net/doc/tcmalloc.html) This will lead to substantial improvements in parallel performance.
 
@@ -30,5 +29,5 @@ The software is based off algorithms described in:
 
 ### Using DynamicPrevariety: ###
 
-* DynamicPrevariety takes in support sets of Newton polytopes written to file; for examples, see the examples folder. To compute the prevariety of the cyclic-8 roots problem, run ./prevariety ./examples/cyclic/cyclic8.
+* DynamicPrevariety takes in support sets of Newton polytopes written to file; for examples, see the examples folder. To compute the prevariety of the cyclic-8 roots problem, run ./dynamicprevariety ./examples/cyclic/cyclic8.
 * There are several options that can be set. Run `./dynamicprevariety -help` for more information.

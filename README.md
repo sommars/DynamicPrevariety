@@ -19,7 +19,7 @@ The software is based off algorithms described in:
     ```
 * (Optional) Install tcmalloc (http://goog-perftools.sourceforge.net/doc/tcmalloc.html)
 
-    This will lead to substantial improvements in parallel performance.
+    If this library is linked in at compile time, it will lead to substantial improvements in parallel performance.
 
 * Making DynamicPrevariety
     ```

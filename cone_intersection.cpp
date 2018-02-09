@@ -8,6 +8,8 @@ bool ExitOnFindDimension = false;
 bool ExitedComputationEarly = false;
 bool OnlyFindHighestDimensionalCones = false;
 int DimensionForExit = -1;
+int Leaves = 0;
+int IntermediateCount = 0;
 
 //------------------------------------------------------------------------------
 list<Cone> DoCommonRefinement(
@@ -53,7 +55,7 @@ list<Cone> DoCommonRefinement(
          ConeToTest->HOPolyhedron.constraints());
       if (TestCone.HOPolyhedron.is_empty())
          continue;
-         
+      IntermediateCount++;
       TestCone.RelationTables = RelationTables;
 
       Result.push_back(TestCone);
@@ -196,7 +198,7 @@ void ThreadEnum(
                int ConeDim = i->HOPolyhedron.affine_dimension();
                if (ConeDim == 0)
                   continue;
-                  
+               Leaves++;
                if (ExitOnFindDimension && (ConeDim <= DimensionForExit))
                   continue;
                   
@@ -692,6 +694,8 @@ int main(int argc, char* argv[])
       << "Pretropisms: " << Output.RayToIndexMap.size() << endl
       << "Total Alg time: " << TotalAlgTime << endl
       << "Exited computation early: " << boolalpha << ExitedComputationEarly << endl
+      << "IntermediateCount: " << IntermediateCount << endl
+      << "LeavesCount: " << Leaves << endl
       << fixed << "Random Seed: " << RandomSeed << endl;
       
       double PrintingTime = double(clock() - PrintingTimeStart) / CLOCKS_PER_SEC;

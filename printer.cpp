@@ -183,17 +183,15 @@ void StreamRayToIndexMap(TropicalPrevariety &TP, stringstream &s)
 //------------------------------------------------------------------------------
 void StreamRayToIndexMapGfan(TropicalPrevariety &TP, stringstream &s)
 {
-   for(map<vector<int>, int>::iterator itr = TP.RayToIndexMap.begin();
-       itr != TP.RayToIndexMap.end();
-       ++itr)
+   for (size_t i = 0; i != TP.IndexToRayMap.size(); i++)
    {
-      for (size_t i = 0; i != itr->first.size(); i++)
+      for (size_t j = 0; j != TP.IndexToRayMap[i].size(); j++)
       {
-         s << itr->first[i];
-         if (i != itr->first.size() - 1)
+         s << TP.IndexToRayMap[i][j];
+         if (j != TP.IndexToRayMap[i].size() - 1)
             s << " ";
       };
-      s << "\t# " << itr->second << endl;
+      s << "\t# " << i << endl;
    }
    return;
 }

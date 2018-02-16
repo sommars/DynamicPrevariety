@@ -1,6 +1,5 @@
 #include "relation_tables.h"
 
-
 int ConeIntersectionCount;
 bool OnlyFindLowerHull = false;
 bool OnlyFindUpperHull = false;
